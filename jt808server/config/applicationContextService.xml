@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans default-autowire="byName"
+	xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd"
+	default-lazy-init="true">
+
+	<!-- =================================================================== -->
+	<!-- AOP: Configuration and Aspects -->
+	<!-- =================================================================== -->
+	<aop:config>
+		<aop:advisor id="userManagerTx" advice-ref="userManagerTxAdvice"
+			pointcut="execution(* *..service.UserManager.*(..))" order="0" />
+		<aop:advisor id="managerTx" advice-ref="txAdvice"
+			pointcut="execution(* *..service.*Manager.*(..))" order="1" />
+		<aop:advisor id="managerTx1" advice-ref="txAdvice"
+			pointcut="execution(* com.ltmonitor.service.impl.*.*(..))" order="2" />
+
+		<aop:advisor id="managerTx2" advice-ref="txAdviceForBatch"
+			pointcut="execution(* com.ltmonitor.jt808.service.impl.GpsDataService.*(..))"
+			order="3" />
+
+		<aop:advisor id="managerTx3" advice-ref="txAdviceForBatch"
+			pointcut="execution(* com.ltmonitor.jt808.service.impl.RealDataService.*(..))"
+			order="4" />
+
+	</aop:config>
+
+	<!-- Enable @Transactional support -->
+	<tx:annotation-driven />
+
+	<!-- Enable @AspectJ support -->
+	<aop:aspectj-autoproxy />
+
+	<tx:advice id="txAdviceForBatch">
+		<tx:attributes>
+			<!-- Read-only commented out to make things easier for end-users -->
+			<!-- http://issues.appfuse.org/browse/APF-556 -->
+			<!--tx:method name="get*" read-only="true"/ -->
+			<tx:method name="batch*" propagation="REQUIRED"  read-only="false" />
+		</tx:attributes>
+	</tx:advice>
+
+	<tx:advice id="txAdvice">
+		<tx:attributes>
+			<!-- Read-only commented out to make things easier for end-users -->
+			<!-- http://issues.appfuse.org/browse/APF-556 -->
+			<!--tx:method name="get*" read-only="true"/ -->
+			<tx:method name="get*" read-only="true" />
+			<tx:method name="find*" read-only="true" />
+			<tx:method name="test*" read-only="true" />
+			<tx:method name="load*" propagation="REQUIRED" read-only="true" />
+			<tx:method name="save*" propagation="REQUIRED" read-only="false" />
+			<tx:method name="batch*" propagation="REQUIRED" read-only="false" />
+			<tx:method name="add*" propagation="REQUIRED" read-only="false" />
+			<tx:method name="creat*" propagation="REQUIRED" read-only="false" />
+			<tx:method name="update*" propagation="REQUIRED" read-only="false" />
+			<tx:method name="remove*" propagation="REQUIRED" read-only="false" />
+			<tx:method name="refresh*" propagation="REQUIRED"
+				read-only="false" />
+			<tx:method name="put*" propagation="REQUIRED" read-only="false" />
+			<tx:method name="put*" propagation="REQUIRED" read-only="false" />
+			<tx:method name="open*" propagation="REQUIRED" read-only="false" />
+			<tx:method name="logout*" propagation="REQUIRED" read-only="false" />
+			<tx:method name="delete*" propagation="REQUIRED" read-only="false" />
+			<tx:method name="release*" propagation="REQUIRED"
+				read-only="false" />
+			<tx:method name="bind*" propagation="REQUIRED" read-only="false" />
+			<tx:method name="exist*" propagation="REQUIRED" read-only="false" />
+			<tx:method name="back*" propagation="REQUIRED" read-only="false" />
+			<tx:method name="saveGpsInfo*" propagation="NOT_SUPPORTED" />
+		</tx:attributes>
+	</tx:advice>
+
+	<tx:advice id="userManagerTxAdvice">
+		<tx:attributes>
+			<tx:method name="save*" rollback-for="UserExistsException" />
+		</tx:attributes>
+	</tx:advice>
+
+	<bean id="passwordEncoder"
+		class="org.springframework.security.providers.encoding.Md5PasswordEncoder" />
+
+
+	<bean id="terminalService" class="com.ltmonitor.service.impl.TerminalService">
+		<property name="baseDao" ref="baseDao"></property>
+	</bean>
+
+	<bean id="basicDataService" class="com.ltmonitor.service.impl.BasicDataService">
+	</bean>
+
+	<bean id="baseService" class="com.ltmonitor.service.impl.BaseService">
+	</bean>
+
+
+	<bean id="departmentService" class="com.ltmonitor.service.impl.DepartmentService">
+	</bean>
+	<bean id="vehicleService" class="com.ltmonitor.service.impl.VehicleService">
+	</bean>
+
+
+</beans>

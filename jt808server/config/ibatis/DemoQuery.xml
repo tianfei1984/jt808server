@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="demo">
+
+	<!-- Select with no parameters using the result map for Account class. -->
+	<!-- 
+		<select id="selectAllAccounts"
+		parameterClass="com.mangocity.util.collections.FormatMap"
+		resultClass="java.util.HashMap">
+		select * from ACCOUNT 
+		
+		
+		<dynamic prepend="WHERE">
+		<isNotEmpty prepend="AND" property="id">
+		(id = #id#)
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="sex">
+		(sex like '%$sex$%')
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="money">
+		(money = #money#)
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="birthday">
+		(birthday = to_date(#birthday#, 'YYYY-MM-DD'))
+		</isNotEmpty>
+		
+		</dynamic>
+		</select>
+	-->
+
+	<select id="queryKnowledges"
+		parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select * from vehicleInfo
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="systemID">
+				(systemID = #systemID#)
+			</isNotEmpty>
+			<!-- 注意LIKE的写法 -->
+			<isNotEmpty prepend="AND" property="productName">
+				(productName like '%$productName$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="modality">
+				(modality = #modality#)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="productSeries">
+				(product_Series = #productSeries#)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="feSSO">
+				(fe_SSO = #feSSO#)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="startDate">
+				<![CDATA[
+				(create_Time >= to_date(#startDate#, 'YYYY-MM-DD'))
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="endDate">
+				<![CDATA[
+				(create_Time <= to_date(#endDate#, 'YYYY-MM-DD'))
+				]]>
+			</isNotEmpty>
+
+
+
+		</dynamic>
+	</select>
+	
+
+	<!-- 
+		<select id="queryCities"
+		parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select id name, name descr from test_city 
+		
+		<dynamic prepend="WHERE">		   
+		<isNotEmpty prepend="AND" property="parent">
+		(parent = #parent#)
+		</isNotEmpty>
+		
+		<isNull prepend="AND" property="parent">
+		(parent is null)
+		</isNull>
+		
+		<isNotEmpty prepend="AND" property="type">
+		(type = #type#)
+		</isNotEmpty>
+		
+		
+		</dynamic>
+		</select>
+	-->
+
+
+</sqlMap>

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN 2.0//EN" "http://www.springframework.org/dtd/spring-beans-2.0.dtd">
+<beans default-autowire="byName" default-lazy-init="true">
+
+	<bean id="gpsDataService" class="com.ltmonitor.jt808.service.impl.GpsDataService"  init-method="start"  destroy-method="stopService">
+		<property name="baseDao" ref="baseDao"></property>
+		<property name="uploadDir" value="${imagePath}"></property>
+		<property name="enableSaveDb">
+			<value>${enableSaveDb}</value>
+		</property>
+	</bean>
+
+	<bean id="messageProcessService" class="com.ltmonitor.jt808.service.impl.MessageProcessService">
+	</bean>
+
+	<bean id="t808Manager" class="com.ltmonitor.jt808.service.impl.T808Manager">
+		<property name="listenPort" value="${listenPort}"></property>
+		<property name="enable808Tranasfer" value="${enable808Tranasfer}"></property>
+		<property name="third808ServerPort" value="${third808ServerPort}"></property>
+		<property name="third808ServerIp" value="${third808ServerIp}"></property>
+	</bean>
+	
+	
+	<bean id="jt808TransferService" class="com.ltmonitor.server.mina.JT808TransferService">
+		<property name="enable808DownTranasfer" value="${enable808DownTranasfer}"></property>
+	
+	</bean>
+	
+	
+	<bean id="mediaService" class="com.ltmonitor.jt808.service.impl.MediaService">
+		<property name="uploadDir" value="${imagePath}"></property>
+		 
+		<property name="mediaUploadTimeOut" value="${mediaUploadTimeOut}"></property>
+		<property name="maxRetransTimes" value="${maxRetransTimes}"></property>
+		
+	</bean>
+	<!-- 工厂方法 -->
+	<bean id="jt808Server" factory-bean="jt808ServerFactory" factory-method="getJt808Server" />
+	<!-- 工厂配置，根据transpor配置参数来决定是upd还是tcp -->
+	<bean id="jt808ServerFactory" class="com.ltmonitor.server.mina.JT808ServerFactory">
+		<property name="transport" value="${transport}"></property>
+	</bean>
+
+	<bean id="jt808TcpServer" class="com.ltmonitor.server.mina.JT808TcpServer">
+		<property name="maxOfflineTime">
+			<value>${maxOfflineTime}</value>
+		</property>
+	</bean>
+	
+	<bean id="jt808UdpServer" class="com.ltmonitor.server.mina.JT808UdpServer">
+	</bean>
+	 <!--  JT808业务处理器 -->
+	<bean id="jt808Handler" class="com.ltmonitor.server.mina.JT808ServerHandler">
+		<property name="realDataService" ref="realDataService"></property>
+	</bean>
+	<!-- jt808命令服务 -->
+	<bean id="commandService" class="com.ltmonitor.jt808.service.impl.CommandService">
+	</bean>
+	
+	<bean id="nightDrivingAlarmService" class="com.ltmonitor.jt808.service.impl.NightDrivingAlarmService">
+	</bean>
+	
+	<!-- 车辆实时数据接口服务 -->
+	<bean id="realDataService" class="com.ltmonitor.jt808.service.impl.RealDataService" init-method="start" destroy-method="stopService">
+	    <property name="maxOfflineTime">
+			<value>${maxOfflineTime}</value>
+		</property>
+	</bean>
+
+	<!-- 报警服务 -->
+	<bean id="alarmService" class="com.ltmonitor.jt808.service.impl.AlarmNewService" init-method="start" destroy-method="stopService">
+	</bean>
+	
+	<bean id="onlineRecordService" class="com.ltmonitor.jt808.service.impl.OnlineRecordService" >
+	</bean>
+	
+	
+	<bean id="newAlarmService" class="com.ltmonitor.jt808.service.impl.NewAlarmService" init-method="start" destroy-method="stopService">
+	</bean>
+	
+
+	<bean id="ackService" class="com.ltmonitor.jt808.service.impl.AckService">
+		<property name="checkRegister">
+			<value>${checkRegister}</value>
+		</property>
+		<property name="transferTo809Enabled">
+			<value>${transferTo809Enabled}</value>
+		</property>
+		
+		<property name="ack0200PacketDisabled">
+			<value>${ack0200PacketDisabled}</value>
+		</property>
+	</bean>
+
+	<bean id="locationService" class="com.ltmonitor.service.impl.LocationService">
+	</bean>
+
+	<bean id="areaAlarmService" class="com.ltmonitor.jt808.service.impl.AreaAlarmService" init-method="start" destroy-method="stopService">
+		<property name="areaAlarmEnabled" value="${areaAlarmEnabled}">
+		</property>
+	</bean>
+
+
+	<bean id="transferGpsService" class="com.ltmonitor.jt808.service.impl.TransferGpsService">
+		<property name="transferTo809Enabled">
+			<value>${transferTo809Enabled}</value>
+		</property>
+		<property name="transferAlarmTo809Enabled">
+			<value>${transferAlarmTo809Enabled}</value>
+		</property>
+	</bean>
+</beans>

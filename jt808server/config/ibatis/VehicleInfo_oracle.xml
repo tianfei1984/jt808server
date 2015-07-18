@@ -1,0 +1,1413 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="vehicle">
+  <!-- 更新实时库所有车辆为离线状态 -->
+	<update id="resetRealDataState" parameterClass="java.util.HashMap">
+	   update gpsRealData set onlineStatus = 0 
+	</update>
+	<!-- 更新实时库数据 -->
+	<update id="updateRealData" parameterClass="com.ltmonitor.entity.GPSRealData">
+		update gpsRealData
+		set plateNo = #plateNo#, onlineStatus=#online#,
+		simNo= #simNo#, sendTime=
+		#sendTime#,
+		longitude=#longitude#,latitude=#latitude#,
+		velocity=#velocity#,direction=#direction#, status=#status#,
+		mileage=
+		#mileage#, gas=#gas#,recordVelocity=#recordVelocity#,
+		updateDate=#updateDate#,
+		alarmState= #alarmState#, altitude=
+		#altitude#,valid=#valid#
+		where vehicleId = #vehicleId#
+	</update>
+	<!-- 插入Gps历史数据 -->
+	<insert id="insertGpsInfo" parameterClass="com.ltmonitor.entity.GpsInfo">
+
+		insert into gpsInfo
+		(simNo ,plateNo
+		,sendTime
+		,longitude
+		,latitude
+		,velocity
+		,direction
+		,status
+		,mileage
+		,gas
+		,recordVelocity
+		,location
+		,createDate
+		,alarmState
+		,altitude
+		,valid
+		,runStatus)
+		values (
+		#simNo#, #plateNo#,#sendTime#, #longitude#,#latitude#,
+		#velocity#,#direction#,
+		#status#,
+		#mileage#, #gas#,#recordVelocity#,
+		#location#,#createDate#,
+		#alarmState#, #altitude#,#valid#, #runStatus#
+		)
+
+	</insert>
+
+	<!-- 查询车辆列表 -->
+	<select id="selectVehicles" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select  v.*, d.name as depName1, r.driverName,r.driverId,
+		m.name as memberName, e.fullName as regionName, i.description as
+		industryTypeName ,t.name as
+		vehicleTypeName , tm.termNo
+		from vehicle v
+		left join MemberInfo m on v.memberId = m.id
+		left join (select  driverId, driverName, vehicleId from DriverInfo where vehicleId
+		=1 limit 0,1) r on
+		v.vehicleId = r.vehicleId
+		left join department d on v.depId = d.depId
+		left join region e on e.code = v.region
+		left join industryType i on
+		i.code = v.industry
+		left join vehicleType t on t.code = v.vehicleType
+		left join terminal tm on tm.termId = v.termId
+		where v.deleted = 0
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="plateNo">
+				(v.plateNo like
+				'%$plateNo$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="depId">
+				(v.depId = #depId#)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="simNo">
+				(v.simNo like
+				'%$simNo$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="vendor">
+				(v.vendor like
+				'%$vendor$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="vehicleId">
+				(v.vehicleId =
+				#vehicleId#)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="driverName">
+				(r.driverName like
+				'%$driverName$%')
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="runStatus">
+				(v.runStatus =
+				#runStatus#)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="enclosureId">
+				not exists (select 1
+				from EnclosureBinding where enclosureId = #enclosureId# and
+				vehicleId = v.vehicleId)
+			</isNotEmpty>
+		</dynamic>
+		 order by v.plateNo
+	</select>
+
+
+	<!-- 用于车辆下拉框的展示 -->
+	<select id="selectVehicleList" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select vehicleId as code, plateNo as name from vehicle v
+		, department d
+		where v.deleted = 0 and v.depId = d.depId
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="plateNo">
+				(plateNo like
+				'%$plateNo$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="depId">
+				(v.depId = #depId#)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="vehicleId">
+				(v.vehicleId =
+				#vehicleId#)
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="simNo">
+				(simNo like
+				'%$simNo$%')
+			</isNotEmpty>
+		</dynamic>
+		order by v.plateNo
+	</select>
+
+	<!-- 围栏 绑定的车辆列表 -->
+	<select id="selectBindVehicles" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select v.*, d.name as depName1 from vehicle v
+		, department d, EnclosureBinding b
+		where v.deleted = 0 and v.depId =
+		d.depId and v.vehicleId = b.vehicleId
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="plateNo">
+				(plateNo like
+				'%$plateNo$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="depId">
+				(v.depId = #depId#)
+			</isNotEmpty>
+			<!-- 围栏ID -->
+			<isNotEmpty prepend="AND" property="enclosureId">
+				(b.enclosureId =
+				#enclosureId#)
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="simNo">
+				(simNo like
+				'%$simNo$%')
+			</isNotEmpty>
+		</dynamic>
+          order by v.plateNo
+	</select>
+
+
+	<select id="selectOnlineVehicles" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select v.*, d.name as
+		depName1,g.sendTime,
+		(case when g.online = 1 then '在线' else '离线' end)
+		as online,
+		r.driverId, r.driverName,
+		(case when g.online = 1 then 0 when
+		g.sendTime is null then 0 else (TIMESTAMPDIFF(SECOND, sendTime, now())
+		* 0.1 / 60) end )
+		as offlineTimeSpan,
+		m.name as
+		memberName ,e.fullName as
+		regionName, i.description as industryType
+		,t.name as
+		vehicleTypeName
+		from vehicle v
+		left join gpsRealData g on
+		v.vehicleId = g.vehicleId
+		left
+		join MemberInfo m on v.memberId = m.id
+		left join DriverInfo r on
+		v.vehicleId = r.vehicleId
+		left join department
+		d on v.depId = d.depId
+		left join region e on e.code = v.region
+		left join
+		industryType i on
+		i.code = v.industry
+		left join vehicleType t on t.code
+		= v.vehicleType
+		<dynamic prepend="where ">
+			<isNotEmpty prepend="AND" property="plateNo">
+				(v.plateNo like
+				'%$plateNo$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="depId">
+				(v.depId = #depId#)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="simNo">
+				(v.simNo like
+				'%$simNo$%')
+			</isNotEmpty>
+
+			<isEqual prepend="AND" property="status" compareValue="online">
+				(g.online = 1)
+			</isEqual>
+			<isEqual prepend="AND" property="status" compareValue="offline">
+				<![CDATA[(g.online <> 1)]]>
+			</isEqual>
+		</dynamic>
+		 order by v.plateNo
+
+	</select>
+	<!-- 此查询用于生成用户的车辆树 -->
+	<select id="selectVehicleTree" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select v.vehicleId, v.plateNo, v.depId, g.velocity, v.simNo, g.online,
+		d.driverName 
+		from
+		vehicle v left join GpsRealData g on v.vehicleId = g.vehicleId 
+		left join (select  driverId, driverName, vehicleId from DriverInfo where vehicleId
+		=1 limit 0,1)  d on v.vehicleId = d.vehicleId 
+		where v.deleted = 0
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="plateNo">
+				(v.plateNo like
+				'%$plateNo$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="depId">
+				(v.depId = #depId#)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="simNo">
+				(v.simNo like
+				'%$simNo$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="status">
+				(v.status = #status#)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="depIdList">
+				v.depId in (
+				<!-- iterate标签的property属性是parameterClass里面去找一个属性，这个属性实现了Iterable接口 -->
+				<iterate property="depIdList" conjunction=",">
+					#depIdList[]#
+				</iterate>
+				)
+			</isNotEmpty>
+		</dynamic>
+
+	</select>
+
+
+	<select id="selectUsers" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select  u.*, role.name as roleName from
+		userInfo u ,
+		(select r.name, ur.userId, r.roleId from role r , userrole
+		ur where r.roleId=ur.roleId)
+		role
+		where u.deleted = 0 and u.userId =
+		role.userId
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="loginName">
+				(u.loginName like
+				'%$loginName$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="userState">
+				(u.userState =
+				#userState#)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="roleId">
+				(role.roleId =
+				#roleId#)
+			</isNotEmpty>
+
+		</dynamic>
+		  order by u.loginName
+
+	</select>
+
+	<select id="selectDeps" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select 
+		a.*, b.name as
+		parentDepName from department a left join department b on a.parentId =
+		b.depId
+		where a.deleted = 0
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="name">
+				(a.name like
+				'%$name$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="memNo">
+				(a.memNo =
+				#memNo#)
+			</isNotEmpty>
+		</dynamic> 
+		order by a.name
+	</select>
+
+	<select id="selectMembers" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select 
+		a.* from
+		memberInfo a
+		where a.deleted = 0
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="name">
+				(a.name =
+				#name#)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="memNo">
+				(a.memNo =
+				#memNo#)
+			</isNotEmpty>
+		</dynamic>
+		 order by a.name
+	</select>
+	<select id="selectMemberList" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select a.name, a.id as code from memberInfo a
+		where
+		a.deleted = 0
+	</select>
+
+	<select id="selectBasicData" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select  * from basicData a
+		where deleted = 0
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="parent">
+				(a.parent =
+				#parent#)
+			</isNotEmpty>
+		</dynamic>
+		 order by sn
+	</select>
+
+	<select id="selectInformation" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select 
+		a.*, b.name as
+		infoMenuType from basicData a , (select baseId,name,code
+		from basicData
+		where parent = 'InfoMenu') b
+		where a.deleted = 0 and a.parent =
+		'Information' and a.code = b.code
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="code">
+				(a.code =
+				#code#)
+			</isNotEmpty>
+		</dynamic>
+		 order by a.sn
+	</select>
+
+
+
+	<select id="getDepList" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select depId as code, name from department
+		where deleted =
+		0 order by parentId
+
+	</select>
+
+
+	<select id="selectRoles" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select * from
+		role
+		where
+		deleted = 0
+		<dynamic prepend=" AND ">
+			<isNotEmpty prepend="AND" property="name">
+				(name like '%$name$%')
+			</isNotEmpty>
+		</dynamic> 
+		order by name
+	</select>
+	<!-- 角色列表，用于填充下拉框列表， 对于字段命名要求为name,code -->
+	<select id="selectRoleList" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select roleId as code, name from role where deleted = 0
+
+	</select>
+
+	<!--用于前台展现单个车辆的综合车辆信息，包括GPS实时数据、车辆静态信息、业户信息、驾驶员信息,电子运单信息等 -->
+	<select id="selectVehicleInfo" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select v.vehicleId,v.plateNo, v.simNo, g.*,d.name as
+		depName,
+		v.plateColor,r.driverId, r.driverName,
+		m.name as memberName ,
+		v.memberId,
+		v.region, e.fullName as regionName, i.description as
+		industryType ,t.name as
+		vehicleType , eb.eContent as ewayBill
+		from
+		vehicle v
+		left join gpsRealData g on v.vehicleId = g.vehicleId
+		left join
+		MemberInfo m on v.memberId = m.id
+		left join (select  driverId, driverName, vehicleId from DriverInfo where vehicleId
+		=#vehicleId# limit 0,1) r on v.vehicleId
+		= r.vehicleId
+		left join department d on v.depId = d.depId
+		left join
+		region e on e.code = v.region
+		left join industryType i on i.code =
+		v.industry
+		left join vehicleType t on t.code = v.vehicleType
+		left join
+		(select  eContent, vehicleId from ewayBill where vehicleId
+		=
+		#vehicleId# order by createDate desc limit 0,1) eb on eb.vehicleId =
+		v.vehicleId
+		<dynamic prepend="where">
+			<isNotEmpty prepend="AND" property="vehicleId">
+				(v.vehicleId =
+				#vehicleId#)
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<!--用于前台展现车辆静态信息、业户信息、驾驶员信息,电子运单信息等 -->
+	<select id="selectStaticVehicleInfo" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select v.vehicleId,v.plateNo, v.simNo, d.name as
+		depName,
+		v.plateColor,r.driverId, r.driverName,
+		m.name as memberName ,
+		v.memberId,
+		v.region, e.fullName as regionName, i.description as
+		industryType ,t.name as
+		vehicleType , eb.eContent as ewayBill
+		from
+		vehicle v
+		left join
+		MemberInfo m on v.memberId = m.id
+		left join (select  driverId, driverName, vehicleId from DriverInfo where vehicleId
+		=#vehicleId# limit 0,1) r on v.vehicleId
+		= r.vehicleId
+		left join department d on v.depId = d.depId
+		left join
+		region e on e.code = v.region
+		left join industryType i on i.code =
+		v.industry
+		left join vehicleType t on t.code = v.vehicleType
+		left join
+		(select  eContent, vehicleId from ewayBill where vehicleId
+		=
+		#vehicleId# order by createDate desc limit 0,1) eb on eb.vehicleId =
+		v.vehicleId
+		<dynamic prepend="where">
+			<isNotEmpty prepend="AND" property="vehicleId">
+				(v.vehicleId =
+				#vehicleId#)
+			</isNotEmpty>
+		</dynamic>
+	</select>
+
+
+	<select id="selectGpsRealData" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select 
+		g.*, d.name as
+		depName, v.plateColor from gpsRealData g , vehicle v ,
+		department d
+		where g.vehicleId = v.vehicleId and v.depId = d.depId
+		<dynamic prepend="">
+			<isNotNull prepend="AND" property="vehicleId">
+				(g.vehicleId =
+				#vehicleId#)
+			</isNotNull>
+
+			<isNotEmpty prepend="AND" property="vehicleIdList">
+				g.vehicleId in (
+				<!-- iterate标签的property属性是parameterClass里面去找一个属性，这个属性实现了Iterable接口 -->
+				<iterate property="vehicleIdList" conjunction=",">
+					#vehicleIdList[]#
+				</iterate>
+				)
+			</isNotEmpty>
+			<!-- 区域查询 -->
+			<isNotEmpty prepend="AND" property="areaBounds">
+				<![CDATA[(
+				latitude <= #maxLatitude# and latitude >= #minLatitude# and 
+				  longitude <= #maxLongitude# and longitude >= #minLongitude# ) 
+				  ]]>
+			</isNotEmpty>
+
+
+		</dynamic>
+        order by g.plateNo
+
+	</select>
+
+	<!--用户操作日志 -->
+	<select id="selectOperationLog" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		<![CDATA[select o.*,b.name as operationDescr from
+		OperationLog o left join basicData b on o.detail = b.code where
+		 b.parent = 'Operation' and o.detail <> 'operationLog.action' ]]>
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="userId">
+				(o.userName = #userName#)
+			</isNotEmpty>
+			<isNotNull prepend="AND" property="startDate">
+				o.createDate >= #startDate#
+			</isNotNull>
+			<isNotNull prepend="AND" property="endDate">
+                <![CDATA[o.createDate <= DATE_ADD(#endDate#,INTERVAL 1 DAY)]]>
+			</isNotNull>
+		</dynamic>
+		 order by o.createDate desc
+	</select>
+
+
+	<!-- 终端808命令结果 -->
+	<select id="selectTerminalCommand" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select t.*, v.plateColor from
+		TerminalCommand t left join vehicle v on t.simNo = v.simNo 
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="userId">
+				(t.userId = #userId#)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="owner">
+				(t.owner = #owner#)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="simNo">
+				(t.simNo like
+				'%$simNo$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="plateNo">
+				(t.plateNo like
+				'%$plateNo$%')
+			</isNotEmpty>
+			<isNotNull prepend="AND" property="startDate">
+				t.createDate >= #startDate#
+			</isNotNull>
+			<!-- 只查询调度信息下发指令 -->
+			<isNotNull prepend="AND" property="dispatch">
+				t.cmdType = 33536
+			</isNotNull>
+			<isNotNull prepend="AND" property="endDate">
+                <![CDATA[t.createDate <= DATE_ADD(#endDate#,INTERVAL 1 DAY )]]>
+			</isNotNull>
+		</dynamic>
+		 order by t.createDate desc 
+	</select>
+
+
+	<!-- jt809命令结果 -->
+	<select id="selectJT809Command" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select * from
+		JT809Command
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="createDate">
+				<![CDATA[createDate >= #createDate#]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="source">
+				(source = #source#)
+			</isNotEmpty>
+		</dynamic> 
+		order by createDate desc
+	</select>
+
+	<!-- jt809命令结果 -->
+	<select id="selectMsgTodoReq" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select w.*
+		from
+		WarnMsgUrgTodoReq w
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="createDate">
+				<![CDATA[w.createDate >= #createDate#]]>
+			</isNotEmpty>
+		</dynamic> 
+		order by w.createDate desc
+	</select>
+
+
+	<!-- 查询电子围栏 -->
+	<select id="selectEnclosureList" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select concat(u.name , '[',b.name,']') as name, enclosureId as code from
+		enclosure u, basicData b where
+		u.deleted = 0 and u.enclosureType =
+		b.code and b.parent = 'EnclosureType'
+		<dynamic prepend=" and ">
+			<isNotEmpty prepend="AND" property="vehicleId">
+				exists (select 1 from
+				EnclosureBinding c where c.enclosureId =
+				u.enclosureId and c.platform
+				= 1 and
+				c.vehicleId = #vehicleId#)
+			</isNotEmpty>
+		</dynamic>
+	</select>
+
+
+	<!-- 查询电子围栏 -->
+	<select id="selectEnclosures" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select * from enclosure u where deleted = 0
+		<dynamic prepend="AND ">
+			<isNotEmpty prepend="AND" property="name">
+				(u.name like
+				'%$name$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="enclosureType">
+				(u.enclosureType =
+				#enclosureType#)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="excludeRoute">
+				<![CDATA[(u.enclosureType <> #excludeRoute#)]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="vehicleId">
+				not exists (select 1
+				from EnclosureBinding where enclosureId = u.enclosureId and platform
+				= 1 and
+				vehicleId = #vehicleId#)
+			</isNotEmpty>
+		</dynamic>
+        order by u.createDate 
+	</select>
+	
+	
+	<!-- 查询电子围栏 -->
+	<select id="selectBindEnclosures" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select  u.*, et.configType, et.status as commandStatus, et.updateDate
+		from enclosure u  left join  
+		(select e.*, t.status, t.updateDate from EnclosureBinding e, terminalCommand t
+		 where e.commandId = t.cmdId and e.vehicleId = #vehicleId# and e.terminal=1) et 
+		 on et.enclosureId = u.enclosureId 
+		 where u.deleted = 0
+		<dynamic prepend="AND ">
+			<isNotEmpty prepend="AND" property="name">
+				(u.name like
+				'%$name$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="enclosureType">
+				(u.enclosureType =
+				#enclosureType#)
+			</isNotEmpty>
+			
+			<isEqual prepend="AND" property="bindState" compareValue="none">
+				<![CDATA[( et.status is null or et.status <> 'Success')]]>
+			</isEqual>
+			<isEqual prepend="AND" property="bindState" compareValue="success">
+				 et.status = 'Success'
+			</isEqual>
+			
+			
+			<isNotEmpty prepend="AND" property="excludeRoute">
+				<![CDATA[(u.enclosureType <> #excludeRoute#)]]>
+			</isNotEmpty>
+			<!--  
+			<isNotEmpty prepend="AND" property="vehicleId">
+				not exists (select 1
+				from EnclosureBinding where enclosureId = u.enclosureId and
+				vehicleId = #vehicleId#)
+			</isNotEmpty>
+			-->
+		</dynamic>
+         order by u.createDate 
+
+	</select>
+	
+
+	<!-- 查询驾驶员信息 -->
+	<select id="selectDrivers" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select u.*, v.plateNo from driverInfo u
+		left join vehicle v on u.vehicleId = v.vehicleId
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="name">
+				(u.driverName like
+				'%$name$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="identityCard">
+				(u.identityCard like
+				'%$identityCard$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="driverId">
+				(u.driverId = #driverId#)
+			</isNotEmpty>			
+			<isNotEmpty prepend="AND" property="vehicleId">
+				(u.vehicleId = #vehicleId#)
+			</isNotEmpty>
+		</dynamic>
+		order by u.createDate
+
+	</select>
+
+
+	<!-- 终端终端信息 -->
+	<select id="selectTerminals" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select 
+		t.*,v.plateNo from
+		terminal t left join vehicle v on t.termid =
+		v.termId
+		where t.deleted = 0
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="termNo">
+				(t.termNo like
+				'%$termNo$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="devNo">
+				(t.devNo like
+				'%$devNo$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="simNo">
+				(t.simNo like
+				'%$simNo$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="bind">
+				t.bind = #bind#
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="state">
+				state = #state#
+			</isNotEmpty>
+		</dynamic> 
+		order by t.createDate desc
+	</select>
+
+	<!--获取没有绑定的终端列表 -->
+	<select id="selectUnbindTerms" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select termId as code, termNo as name from terminal
+		where (
+		bind = 0 or termId = #termId# ) and deleted = 0
+	</select>
+
+	<!--获取行业类型 -->
+	<select id="selectIndustryType" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select id, parent_Code as pId, industry_type as name,
+		'true' as open from industryType
+		order by id
+	</select>
+	<!--获取行政区域 -->
+	<select id="selectRegion" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select id, parent as pId, name, 'false' as open from
+		region
+		order by id
+	</select>
+	<!--获取车辆类型 -->
+	<select id="selectVehicleType" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select id, parentCode as pId, name, 'false' as open from
+		vehicleType
+		order by id
+	</select>
+
+	<!--获取部门列表 -->
+	<select id="selectDepList" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select depId as code, name from department
+		where deleted =
+		0
+	</select>
+
+	<!-- 查询记录仪信息 -->
+	<select id="selectVehicleRecorders" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select a.cmd,
+		a.cmdData, a.createDate, v.plateColor,v.simNo,v.plateNo
+		,d.name as
+		depName from vehicleRecorder a, vehicle v ,
+		department d
+		where
+		a.vehicleId = v.vehicleId and v.depId = d.depId
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="plateNo">
+				(a.plateNo like
+				'%$plateNo$%')
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="startTime">
+				<![CDATA[
+				(a.createDate >= #startTime#)
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="endTime">
+				<![CDATA[
+				(a.createDate <= #endTime#)
+				]]>
+			</isNotEmpty>
+			<!-- 报警子类型 -->
+			<isNotEmpty prepend="AND" property="cmdWord">
+				(a.cmd = #cmdWord#)
+			</isNotEmpty>
+			<!-- 命令Id -->
+			<isNotEmpty prepend="AND" property="commandId">
+				(a.commandId =
+				#commandId#)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="depId">
+				(v.depId = #depId#)
+			</isNotEmpty>
+		</dynamic>
+         order by a.createDate desc
+	</select>
+	
+	<select id="selectNewAlarms" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		<![CDATA[
+		select a.*,a.alarmTime as startTime,
+		v.plateColor,v.simNo,d.name as depName,v.depId from newAlarm a,
+		vehicle v ,
+		department d
+		where a.vehicleId = v.vehicleId and v.depId =
+		d.depId 
+				]]>
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="plateNo">
+				(a.plateNo like
+				'%$plateNo$%')
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="startTime">
+				<![CDATA[
+				(a.createDate >= #startTime#)
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="endTime">
+				<![CDATA[
+				(a.createDate <= #endTime#)
+				]]>
+			</isNotEmpty>
+			<!-- 报警子类型 -->
+			<isNotEmpty prepend="AND" property="alarmType">
+				(a.alarmType =
+				#alarmType#)
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="processed">
+				(a.processed =
+				#processed#)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="depId">
+				(v.depId = #depId#)
+			</isNotEmpty>
+		</dynamic>
+		 order by a.createDate desc
+
+	</select>
+
+
+
+	<!-- 查询报警记录 -->
+	<select id="selectAlarms" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		<![CDATA[
+		select a.*,
+		v.plateColor,v.simNo,d.name as depName from alarmRecord a,
+		vehicle v ,
+		department d
+		where a.plateNo = v.plateNo and v.depId =
+		d.depId and a.type <> 'terminal_state' 
+				]]>
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="plateNo">
+				(a.plateNo like
+				'%$plateNo$%')
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="startTime">
+				<![CDATA[
+				(startTime >= #startTime#)
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="endTime">
+				<![CDATA[
+				(startTime <= #endTime#)
+				]]>
+			</isNotEmpty>
+			<!-- 报警子类型 -->
+			<isNotEmpty prepend="AND" property="childType">
+				(a.childType =
+				#childType#)
+			</isNotEmpty>
+			
+			<!-- 报警来源 -->
+			<isNotEmpty prepend="AND" property="alarmSource">
+				(a.type =
+				#alarmSource#)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="status">
+				(a.status = #status#)
+			</isNotEmpty>
+			<!-- 围栏Id -->
+			<isNotEmpty prepend="AND" property="enclosureId">
+				(a.station =
+				#enclosureId#)
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="processed">
+				(a.processed =
+				#processed#)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="depId">
+				(v.depId = #depId#)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="onlineRecord">
+				(a.childType =
+				'GpsOnline' or a.childType = 'GpsOffline')
+			</isNotEmpty>
+		</dynamic>
+         order by startTime desc
+	</select>
+	
+	
+
+	<!-- 查询报警处理记录 -->
+	<select id="selectProcessedAlarms" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		<![CDATA[
+		select a.*,a.alarmTime as startTime,
+		v.plateColor,v.simNo,d.name as depName from newAlarm a,
+		vehicle v ,
+		department d
+		where a.vehicleId = v.vehicleId and v.depId =
+		d.depId 
+				]]>
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="plateNo">
+				(a.plateNo like
+				'%$plateNo$%')
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="startTime">
+				<![CDATA[
+				(alarmTime >= #startTime#)
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="endTime">
+				<![CDATA[
+				(alarmTime <= #endTime#)
+				]]>
+			</isNotEmpty>
+			<!-- 报警子类型 -->
+			<isNotEmpty prepend="AND" property="alarmType">
+				(a.alarmType =
+				#alarmType#)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="processed">
+				(a.processed =
+				#processed#)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="depId">
+				(v.depId = #depId#)
+			</isNotEmpty>
+		</dynamic> 
+
+	</select>
+	
+	<!--用于历史轨迹回放 -->
+	<select id="selectGpsInfos" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select a.* from gpsInfo a
+		<dynamic prepend="WHERE ">
+			<isNotEmpty prepend="AND" property="plateNo">
+				a.plateNo = #plateNo#
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="startTime">
+				<![CDATA[
+				(sendTime >= #startTime#)
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="endTime">
+				<![CDATA[
+				(sendTime <= #endTime#)
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="status">
+				(a.status = #status#)
+			</isNotEmpty>
+			
+			<isEqual prepend="AND" property="valid" compareValue="1">
+				(a.valid = 1)
+			</isEqual>
+			
+			<isNotEmpty prepend="AND" property="minSpeed">
+				<![CDATA[(a.velocity >= #minSpeed#)]]>
+			</isNotEmpty>
+			
+			<isNotEmpty prepend="AND" property="minSpeed">
+				<![CDATA[(a.velocity <= #maxSpeed#)]]>
+			</isNotEmpty>
+			
+		</dynamic>
+		 order by sendTime 
+	</select>
+
+	<!-- 用于历史GPS数据导出和报表查询 -->
+	<select id="selectHisotryGpsInfos" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select a.*, d.name as
+		depName, v.plateColor from gpsInfo
+		a, vehicle v, department d where
+		a.plateNo = v.plateNo and v.depId = d.depId
+		<dynamic prepend=" AND ">
+		    <isNotEmpty prepend="AND" property="vehicleId">
+				v.vehicleId = #vehicleId#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="plateNo">
+				v.plateNo = #plateNo#
+			</isNotEmpty>
+
+			<isNotEmpty prepend="AND" property="startTime">
+				<![CDATA[
+				(a.sendTime >= #startTime#)
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="endTime">
+				<![CDATA[
+				(a.sendTime <= #endTime#)
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="status">
+				(a.status = #status#)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="depId">
+				v.depId = #depId#
+			</isNotEmpty>
+		</dynamic> 
+		order by sendTime
+	</select>
+
+	<select id="selectGpsInfoInArea" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select a.plateNo, a.latitude, a.longitude, a.sendTime from gpsInfo
+		a
+		<dynamic prepend="WHERE ">
+
+			<isNotEmpty prepend="AND" property="startTime">
+				<![CDATA[
+				(sendTime >= #startTime#)
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="endTime">
+				<![CDATA[
+				(sendTime <= #endTime#)
+				]]>
+			</isNotEmpty>
+			<!-- 是否经过区域 -->
+			<isNotEmpty prepend="AND" property="Area">
+			<![CDATA[(
+				latitude <= #maxLatitude# and latitude >= #minLatitude# and 
+				  longitude <= #maxLongitude# and longitude >= #minLongitude# ) 
+				  ]]>
+			</isNotEmpty>
+		</dynamic>
+
+	</select>
+
+	<!-- 查询上线率 -->
+	<select id="selectOnlineRate" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select v.DepId, sum(case a.Online when 1 then 1 else 0
+		end) OnlineNum,
+		count(1) VehicleNum
+		from Vehicle v left join GpsRealData
+		a on v.PlateNo = a.PlateNo where
+		v.Deleted = 0 group by v.DepId
+
+	</select>
+	<!-- 车辆上线率统计 -->
+	<select id="selectVehicleOnlineRate2" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select  <!--用于分页行号 -->
+		f.*, d.Name as depName from VehicleOnlineRate f , Vehicle v,
+		Department d
+		where f.PlateNo = v.PlateNo and v.DepId = d.DepId
+		<dynamic prepend=" and ">
+			<isNotNull property="startDate">
+				StaticDate >= #startDate#
+			</isNotNull>
+		</dynamic>
+		<dynamic prepend="and">
+			<isNotNull property="endDate">
+                <![CDATA[StaticDate <= DATE_ADD(#endDate#,INTERVAL 1 DAY )]]>
+			</isNotNull>
+		</dynamic>
+		<dynamic prepend="and">
+			<isNotNull property="plateNo">
+				V.PlateNo like '%$plateNo$%'
+			</isNotNull>
+		</dynamic>
+
+		<dynamic prepend="And">
+			<isNotNull property="depId">
+				v.DepId = #depId#
+			</isNotNull>
+		</dynamic>
+
+		<dynamic prepend="and">
+			<isNotNull property="intervalType">
+				f.IntervalType = #intervalType#
+			</isNotNull>
+		</dynamic>
+		<dynamic prepend="And">
+			<!-- 根据用户的管理部门权限来过滤车辆 -->
+			<isNotNull property="depList">
+				v.DepId in
+				<iterate property="depList" conjunction="," close=")" open="(">
+					#depList[]#
+				</iterate>
+			</isNotNull>
+		</dynamic>		 
+		order by f.PlateNo
+	</select>
+	<!-- 按任意时间段统计车辆的上线率 -->
+	<select id="selectVehicleOnlineRate" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		<![CDATA[	
+  select v.plateNo, v.plateColor, v.depId, d.name as depName ,
+(case when vr.ts is null then 0 else (vr.ts * 0.1 / 6 ) end )as onlineTime,  
+ (timeSpan * 0.1 / 6) as totalTime, (case when vr.ts is null then timespan else (timeSpan - vr.ts) end)* 0.1 / 6 as offlineTime,
+  (case when timeSpan = 0 then 0 when vr.ts is null then 0 else round((vr.ts  * 100.00/  timeSpan),2) end) as onlineRate 
+from (select plateNo, plateColor, depId, TIMESTAMPDIFF(SECOND, #startDate#,#endDate#) as timeSpan from 
+vehicle ) v left join  
+(select plateNO, 
+sum(TIMESTAMPDIFF(second,(case when startTime >= #startDate# then startTime else #startDate# end),
+(case when status = 'New' then now() when endTime <= #endDate# then endTime else #endDate# end))) as ts 
+from alarmRecord where endTime >= #startDate# and startTime <= #endDate# and childType = 'GpsOnline' 
+group by plateNo ) vr
+ on  v.plateNo = vr.plateNo 
+left join department d on v.depId = d.depId ]]>
+		<dynamic prepend="WHERE ">
+			<isNotNull prepend="AND" property="plateNo">
+				V.PlateNo like
+				'%$plateNo$%'
+			</isNotNull>
+			<isNotNull prepend="AND" property="depId">
+				v.DepId = #depId#
+			</isNotNull>
+			<!-- 根据用户的管理部门权限来过滤车辆 -->
+			<isNotNull prepend="AND" property="depList">
+				v.DepId in
+				<iterate property="depList" conjunction="," close=")" open="(">
+					#depList[]#
+				</iterate>
+			</isNotNull>
+		</dynamic> 
+		order by v.PlateNo
+	</select>
+	<!-- 查询油量和里程统计 -->
+	<select id="selectMileageStatic" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+
+		select 
+		f.*, d.Name as depName,v.plateColor from FuelConsumption f , Vehicle
+		v, Department
+		d
+		where f.PlateNo = v.PlateNo and v.DepId = d.DepId
+		<dynamic prepend=" and ">
+			<isNotNull property="startDate">
+				StaticDate >= #startDate#
+			</isNotNull>
+		</dynamic>
+		<dynamic prepend="and">
+			<isNotNull property="endDate">
+                <![CDATA[StaticDate <= DATE_ADD(#endDate#,INTERVAL 1 DAY )]]>
+			</isNotNull>
+		</dynamic>
+		<dynamic prepend="and">
+			<isNotNull property="plateNo">
+				V.PlateNo like '%$plateNo$%'
+			</isNotNull>
+		</dynamic>
+
+		<dynamic prepend="And">
+			<isNotNull property="depId">
+				v.DepId = #depId#
+			</isNotNull>
+		</dynamic>
+
+		<dynamic prepend="and">
+			<isNotNull property="intervalType">
+				f.IntervalType = #intervalType#
+			</isNotNull>
+		</dynamic>
+		<dynamic prepend="And">
+			<!-- 根据用户的管理部门权限来过滤车辆 -->
+			<isNotNull property="depList">
+				v.DepId in
+				<iterate property="depList" conjunction="," close=")" open="(">
+					#depList[]#
+				</iterate>
+			</isNotNull>
+		</dynamic> 		
+		order by f.staticDate desc
+	</select>
+
+	<!-- 报警统计 -->
+	<select id="selectAlarmStatic" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select 
+		v.plateNo,
+		v.plateColor, d.name as depName, f.staticDate,
+		IFNULL(f.alarmTimes , 0) as alarmTimes,
+		f.alarmType
+		from
+		Vehicle v left join
+		(select plateNo, max(a.alarmTime) staticDate,
+		count(1) alarmTimes, alarmType
+		from
+		newAlarm a
+		<dynamic prepend=" where ">
+			<isNotNull prepend="and" property="startDate">
+				 <![CDATA[a.alarmTime >= #startDate#]]>
+			</isNotNull>
+			<isNotNull prepend="and" property="endDate">
+          <![CDATA[a.alarmTime <= DATE_ADD(#endDate#,INTERVAL 1 DAY )]]>
+			</isNotNull>
+			<isNotNull prepend="and" property="plateNo">
+				a.PlateNo like
+				'%$plateNo$%'
+			</isNotNull>
+			<!-- 根据用户的选择的报警类型进行统计 -->
+			<isNotNull prepend="and " property="alarmTypeList">
+				a.alarmType in
+				<iterate property="alarmTypeList" conjunction="," close=")"
+					open="(">
+					#alarmTypeList[]#
+				</iterate>
+			</isNotNull>
+			
+		</dynamic>
+		group by a.PlateNo , a.alarmType
+		) f on v.plateNo = f.plateNo,
+		Department d
+		where
+		v.DepId = d.DepId
+		<dynamic prepend="and ">
+			<isNotNull prepend="and " property="depId">
+				v.DepId = #depId#
+			</isNotNull>
+			<isNotNull prepend="and " property="plateNo">
+				V.PlateNo like
+				'%$plateNo$%'
+			</isNotNull>
+			<isNotEmpty prepend="AND" property="depIdList">
+				v.depId in (
+				<!-- iterate标签的property属性是parameterClass里面去找一个属性，这个属性实现了Iterable接口 -->
+				<iterate property="depIdList" conjunction=",">
+					#depIdList[]#
+				</iterate>
+				)
+			</isNotEmpty>
+		</dynamic> 
+		 order by v.plateNo 
+	</select>
+
+
+	<!-- 油量和里程统计 按时间段统计 -->
+	<select id="selectMileageStaticByTimeSpan" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select 
+		v.plateNo, v.plateColor,
+		sum(f.Mileage) mileage, sum(f.gas) gas,min(d.Name) as depName,
+		0 as ID,
+		3 as IntervalType,
+		max(staticDate) as staticDate
+		from FuelConsumption f
+		, Vehicle v, Department d
+		where f.PlateNo = v.PlateNo and v.DepId =
+		d.DepId and f.intervalType = 0
+		<dynamic prepend=" and ">
+			<isNotNull property="startDate">
+				StaticDate >= #startDate#
+			</isNotNull>
+		</dynamic>
+		<dynamic prepend="and">
+			<isNotNull property="endDate">
+          <![CDATA[StaticDate <= DATE_ADD(#endDate#,INTERVAL 1 DAY )]]>
+			</isNotNull>
+		</dynamic>
+		<dynamic prepend="and">
+			<isNotNull property="plateNo">
+				V.PlateNo like '%$plateNo$%'
+			</isNotNull>
+		</dynamic>
+		<!-- <dynamic prepend="and"> <isNotNull property="intervalType"> f.IntervalType 
+			= #intervalType# </isNotNull> </dynamic> -->
+		<dynamic prepend="And">
+			<!-- 根据用户的管理部门权限来过滤车辆 -->
+			<isNotNull property="depList">
+				v.DepId in
+				<iterate property="depList" conjunction="," close=")" open="(">
+					#depList[]#
+				</iterate>
+			</isNotNull>
+		</dynamic>
+		group by f.PlateNo order by f.plateNo 
+	</select>
+
+	<!-- 部门上线率统计 -->
+	<select id="selectDepartmentOnlineRate" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+		select 
+		d.name as
+		depName, onlineNum, vehicleNum, (vehicleNum - onlineNum) as
+		offlineNum
+		,
+		v.onlineRate , v.statisticDate
+		from onlineStatic v , department d
+		where v.depId = d.depId
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="depId">
+				(v.depId = #depId#)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="startDate">
+				<![CDATA[
+				(statisticDate >= #startDate#)
+				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="endDate">
+				<![CDATA[
+				(statisticDate <= #endDate#)
+				]]>
+			</isNotEmpty>
+		</dynamic> 
+		  order by v.statisticDate desc 
+
+	</select>
+
+
+	<!-- 多媒体上传记录文件查询 -->
+	<select id="selectMediaItems" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+
+		select 
+		m.*, d.name as depName,v.plateNo as plateNo1, v.plateColor from MediaItem m ,
+		Vehicle V , Department d
+		where m.simNo = v.simNo and v.Deleted = 0 and
+		v.DepId = d.DepId
+
+		<dynamic prepend=" and ">
+			<isNotNull property="startDate">
+				m.SendTime >= #startDate#
+			</isNotNull>
+		</dynamic>
+		<dynamic prepend="and">
+			<isNotNull property="endDate">
+        <![CDATA[m.SendTime <=  #endDate#]]>
+			</isNotNull>
+		</dynamic>
+
+		<dynamic prepend="And">
+			<isNotNull property="depList">
+				v.DepId in
+				<iterate property="depList" conjunction="," close=")" open="(">
+					#depList[]#
+				</iterate>
+			</isNotNull>
+		</dynamic>
+		<dynamic prepend="And">
+			<isNotNull property="depId">
+				V.DepId = #depId#
+			</isNotNull>
+		</dynamic>
+		<dynamic prepend="And">
+			<isNotNull property="codeFormat">
+				m.codeFormat = #codeFormat#
+			</isNotNull>
+		</dynamic>
+		<dynamic prepend="And">
+			<isNotNull property="mediaType">
+				m.mediaType = #mediaType#
+			</isNotNull>
+		</dynamic>
+
+		<dynamic prepend="And">
+			<isNotNull property="plateNo">
+				V.PlateNo like '%$PlateNo$%'
+			</isNotNull>
+		</dynamic>
+
+		<dynamic prepend="And">
+			<isNotNull property="simNo">
+				V.SimNo like '%$simNo$%'
+			</isNotNull>
+		</dynamic> 
+		
+		order by m.sendTime desc
+	</select>
+
+
+</sqlMap>

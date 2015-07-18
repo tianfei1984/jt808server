@@ -1,0 +1,732 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd"
+	default-lazy-init="false">
+
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
+		<property name="service">
+			<ref bean="systemConfigManager" />
+		</property>
+		<property name="serviceName">
+			<value>systemConfigManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.SystemConfigManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
+		<property name="service">
+			<ref bean="carTypeManager" />
+		</property>
+		<property name="serviceName">
+			<value>carTypeManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.CarTypeManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
+		<property name="service">
+			<ref bean="asyncObjectService" />
+		</property>
+		<property name="serviceName">
+			<value>asyncObjectService</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.AsyncObjectService</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
+		<property name="service">
+			<ref bean="regionManager" />
+		</property>
+		<property name="serviceName">
+			<value>regionManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.RegionManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
+		<property name="service">
+			<ref bean="factoryInfoManager" />
+		</property>
+		<property name="serviceName">
+			<value>factoryInfoManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.FactoryInfoManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
+		<property name="service">
+			<ref bean="imageManager" />
+		</property>
+		<property name="serviceName">
+			<value>imageManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.ImageManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
+		<property name="service">
+			<ref bean="backUpDataManager" />
+		</property>
+		<property name="serviceName">
+			<value>backUpDataManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.BackUpDataManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+
+
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
+		<property name="service">
+			<ref bean="mapAreaManager" />
+		</property>
+		<property name="serviceName">
+			<value>mapAreaManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.MapAreaManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
+		<property name="service">
+			<ref bean="industryTypeManager" />
+		</property>
+		<property name="serviceName">
+			<value>industryTypeManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.IndustryTypeManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
+		<property name="service">
+			<ref bean="highwaysLineManager" />
+		</property>
+		<property name="serviceName">
+			<value>highwaysLineManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.HighwaysLineManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+
+
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
+		<property name="service">
+			<ref bean="channelsInfoManager" />
+		</property>
+		<property name="serviceName">
+			<value>channelsInfoManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.ChannelsInfoManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
+		<property name="service">
+			<ref bean="configInfoManager" />
+		</property>
+		<property name="serviceName">
+			<value>configInfoManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.ConfigInfoManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
+		<property name="service">
+			<ref bean="fittingManager" />
+		</property>
+		<property name="serviceName">
+			<value>fittingManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.FittingManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
+		<property name="service">
+			<ref bean="smslogManager" />
+		</property>
+		<property name="serviceName">
+			<value>smslogManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.SmslogManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
+		<property name="service">
+			<ref bean="userInfoManager" />
+		</property>
+		<property name="serviceName">
+			<value>userInfoManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.UserInfoManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
+		<property name="service">
+			<ref bean="vehicleGroupManager" />
+		</property>
+		<property name="serviceName">
+			<value>vehicleGroupManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.VehicleGroupManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="gossRoleManager" />
+		</property>
+		<property name="serviceName">
+			<value>gossRoleManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.GossRoleManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="gpsInfoManager" />
+		</property>
+		<property name="serviceName">
+			<value>gpsInfoManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.GpsInfoManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="reportService" />
+		</property>
+		<property name="serviceName">
+			<value>reportService</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.ReportService</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="polygonInfoManager" />
+		</property>
+		<property name="serviceName">
+			<value>polygonInfoManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.PolygonInfoManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="busLineManager" />
+		</property>
+		<property name="serviceName">
+			<value>busLineManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.BusLineManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="gossRoleTypeManager" />
+		</property>
+		<property name="serviceName">
+			<value>gossRoleTypeManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.GossRoleTypeManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="sysFuncManager" />
+		</property>
+		<property name="serviceName">
+			<value>sysFuncManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.SysFuncManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="driverInfoManager" />
+		</property>
+		<property name="serviceName">
+			<value>driverInfoManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.DriverInfoManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="vehicle2DriverManager" />
+		</property>
+		<property name="serviceName">
+			<value>vehicle2DriverManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.Vehicle2DriverManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="vehicleDayStaticsManager" />
+		</property>
+		<property name="serviceName">
+			<value>vehicleDayStaticsManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.VehicleDayStaticsManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="warnMsgInformTipsManager" />
+		</property>
+		<property name="serviceName">
+			<value>warnMsgInformTipsManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.WarnMsgInformTipsManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="warnMsgInformManager" />
+		</property>
+		<property name="serviceName">
+			<value>warnMsgInformManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.WarnMsgInformManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="postQueryReqManager" />
+		</property>
+		<property name="serviceName">
+			<value>postQueryReqManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.PostQueryReqManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="platFormMsgInfoReqManager" />
+		</property>
+		<property name="serviceName">
+			<value>platFormMsgInfoReqManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.PlatFormMsgInfoReqManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="driverInfoReqManager" />
+		</property>
+		<property name="serviceName">
+			<value>driverInfoReqManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.DriverInfoReqManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="takeTravelReqManager" />
+		</property>
+		<property name="serviceName">
+			<value>takeTravelReqManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.TakeTravelReqManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="ewayBillInfoReqManager" />
+		</property>
+		<property name="serviceName">
+			<value>ewayBillInfoReqManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.EwayBillInfoReqManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="warnMsgUrgeTodoReqManager" />
+		</property>
+		<property name="serviceName">
+			<value>warnMsgUrgeTodoReqManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.WarnMsgUrgeTodoReqManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="mediaManager" />
+		</property>
+		<property name="serviceName">
+			<value>mediaManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.MediaManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="group2PolygonManager" />
+		</property>
+		<property name="serviceName">
+			<value>group2PolygonManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.Group2PolygonManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="object2BuslineManager" />
+		</property>
+		<property name="serviceName">
+			<value>object2BuslineManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.Object2BuslineManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="loggerService" />
+		</property>
+		<property name="serviceName">
+			<value>loggerService</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.LoggerService</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="systemLogManager" />
+		</property>
+		<property name="serviceName">
+			<value>systemLogManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.SystemLogManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="crmVehicleParamManager" />
+		</property>
+		<property name="serviceName">
+			<value>crmVehicleParamManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.CrmVehicleParamManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
+		<property name="service">
+			<ref bean="fitting2Manager" />
+		</property>
+		<property name="serviceName">
+			<value>fitting2Manager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.Fitting2Manager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
+		<property name="service">
+			<ref bean="vehicleTerminalManager" />
+		</property>
+		<property name="serviceName">
+			<value>vehicleTerminalManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.VehicleTerminalManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
+		<property name="service">
+			<ref bean="mapConfigManager" />
+		</property>
+		<property name="serviceName">
+			<value>mapConfigManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.MapConfigManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="adInfoManager" />
+		</property>
+		<property name="serviceName">
+			<value>adInfoManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.AdInfoManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="liveTaiManager" />
+		</property>
+		<property name="serviceName">
+			<value>liveTaiManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.LiveTaiManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+	
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="vehicle2AdInfoManager" />
+		</property>
+		<property name="serviceName">
+			<value>vehicle2AdInfoManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.Vehicle2AdInfoManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="mapMarkerManager" />
+		</property>
+		<property name="serviceName">
+			<value>mapMarkerManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.MapMarkerManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+	
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="carMaintainLogManager" />
+		</property>
+		<property name="serviceName">
+			<value>carMaintainLogManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.CarMaintainLogManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="terminalOprLogManager" />
+		</property>
+		<property name="serviceName">
+			<value>terminalOprLogManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.TerminalOprLogManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+	
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="terminalParamManager" />
+		</property>
+		<property name="serviceName">
+			<value>terminalParamManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.TerminalParamManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+	
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		lazy-init="false">
+		<property name="service">
+			<ref bean="dictionaryManager" />
+		</property>
+		<property name="serviceName">
+			<value>dictionaryManager</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.yuweitek.goss.service.DictionaryManager</value>
+		</property>
+		<property name="registryPort" value="${rmi_port}" />
+	</bean>
+
+</beans>

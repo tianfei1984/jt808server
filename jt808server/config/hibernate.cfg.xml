@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+                                         "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+ <session-factory>
+ <property name="myeclipse.connection.profile">sqlserverDriver</property>
+		<property name="hbm2ddl.auto">update</property>
+		<property name="connection.url">
+			jdbc.url=jdbc:jtds:sqlserver://192.168.10.210:1433/gps2012
+		</property>
+		<property name="hibernate.connection.CharSet">utf8</property>
+		<property name="hibernate.connection.characterEncoding">utf8</property>
+		<property name="hibernate.connection.useUnicode">true</property>
+		<property name="connection.username">sa</property>
+		<property name="connection.password">123456</property>
+		<property name="connection.driver_class">
+			net.sourceforge.jtds.jdbc.Driver
+		</property>
+		<property name="dialect">
+			org.hibernate.dialect.SQLServerDialect
+		</property>
+  <mapping class="com.ltmonitor.entity.TerminalCommand"/>
+  <mapping class="com.ltmonitor.entity.VehicleData"/>
+  <mapping class="com.ltmonitor.entity.BasicData"/>
+  <mapping class="com.ltmonitor.entity.Department"/>
+  <mapping class="com.ltmonitor.entity.UserInfo"/>
+  <mapping class="com.ltmonitor.entity.Role"/>
+  <mapping class="com.ltmonitor.entity.FuncModel"/>
+  <mapping class="com.ltmonitor.entity.Enclosure"/>
+  <mapping class="com.ltmonitor.entity.Terminal"/>
+  <mapping class="com.ltmonitor.entity.DriverInfo"/>
+  <mapping class="com.ltmonitor.entity.SystemConfig"/>
+  <mapping class="com.ltmonitor.entity.OperationLog"/>
+  <mapping class="com.ltmonitor.entity.EWayBill"/>
+  <mapping class="com.ltmonitor.entity.GovPlatformMsg"/>
+  <mapping class="com.ltmonitor.entity.WarnMsgUrgeTodoReq"/>
+  <mapping class="com.ltmonitor.entity.LineBufferPoint"/>
+  <mapping class="com.ltmonitor.entity.EnclosureBinding"/>
+  <mapping class="com.ltmonitor.entity.MemberInfo"/>
+  
+  <mapping class="com.ltmonitor.entity.AlarmConfig"/>
+  <mapping class="com.ltmonitor.jt808.entity.SpeedRecorder"/>  
+  <mapping class="com.ltmonitor.jt809.entity.VehicleRegisterInfo"/>  
+  <mapping class="com.ltmonitor.entity.GPSRealData"/>
+  <mapping class="com.ltmonitor.entity.GpsInfo"/>
+  <mapping class="com.ltmonitor.entity.LineSegment"/>
+  <mapping class="com.ltmonitor.entity.Alarm"/>
+  <mapping class="com.ltmonitor.entity.AlarmRecord"/>
+  <mapping class="com.ltmonitor.entity.OnlineRecord"/>
+  <mapping class="com.ltmonitor.entity.MediaItem"/>
+  <mapping class="com.ltmonitor.entity.TerminalParam"/>
+  <mapping class="com.ltmonitor.entity.JT809Command"/>
+  <mapping class="com.ltmonitor.entity.OnlineStatic"/>  
+  <mapping class="com.ltmonitor.entity.FuelConsumption"/>
+  <mapping class="com.ltmonitor.entity.FuelChangeRecord"/>
+  <mapping class="com.ltmonitor.entity.GpsMileage"/>
+  <mapping class="com.ltmonitor.entity.VehicleRecorder"/>
+  <mapping class="com.ltmonitor.entity.VehicleOnlineRate"/>
+  <mapping class="com.ltmonitor.entity.PlatformState"/>
+ </session-factory>
+</hibernate-configuration>

@@ -1,0 +1,401 @@
+package com.ltmonitor.jt808.service.impl;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import org.apache.log4j.Logger;
+
+import com.ltmonitor.dao.IBaseDao;
+import com.ltmonitor.dao.impl.DaoIbatisImpl;
+import com.ltmonitor.entity.AlarmRecord;
+import com.ltmonitor.entity.GPSRealData;
+import com.ltmonitor.entity.StringUtil;
+import com.ltmonitor.entity.VehicleData;
+import com.ltmonitor.jt808.service.IAlarmService;
+import com.ltmonitor.service.ILocationService;
+import com.ltmonitor.service.IRealDataService;
+import com.ltmonitor.service.IVehicleService;
+import com.ltmonitor.util.DateUtil;
+
+/**
+ * 实时数据服务 1.提供一个大的缓存，保存实时数据在内存中; 2.启动线程，定时更新实时数据到数据库中，便于报表查询;
+ * 3.提供RMI服务，web应用可以远程获取内存中的实时数据;
+ * 
+ * @author DELL
+ * 
+ */
+public class RealDataService implements IRealDataService {
+
+	private static Logger logger = Logger.getLogger(RealDataService.class);
+	private IBaseDao baseDao;
+
+	private IAlarmService alarmService;
+
+	public ConcurrentMap<String, GPSRealData> realDataMap = new ConcurrentHashMap<String, GPSRealData>();
+	/**
+	 * 实时更新时间的数据
+	 */
+	public ConcurrentMap<String, Date> onlineMap = new ConcurrentHashMap<String, Date>();
+
+	private IVehicleService vehicleService;
+
+	private DaoIbatisImpl queryDao;
+	/**
+	 * 实时数据数据处理线程
+	 */
+	private Thread processRealDataThread;
+
+	/**
+	 * 位置查询线程
+	 */
+	private Thread locationThread;
+
+	private ILocationService locationService;
+
+	private double maxOfflineTime = 60 * 1; // 1分钟, 1分钟不更新数据包，视为离线
+
+	// private Map<String, Date> onlineMap = new HashMap<String, Date>();
+
+	private boolean startUpdate = true;
+
+	/**
+	 * 线程池，默认是50个
+	 */
+	ExecutorService fixedThreadPool = Executors.newFixedThreadPool(5);
+
+	// ExecutorService fixedThreadPool = Executors.newFixedThreadPool(5);
+
+	public RealDataService() {
+		processRealDataThread = new Thread(new Runnable() {
+			public void run() {
+				ProcessRealDataThreadFunc();
+			}
+		});
+		processRealDataThread.start();
+
+		locationThread = new Thread(new Runnable() {
+			public void run() {
+				locationThreadFunc();
+			}
+		});
+		locationThread.start();
+
+	}
+
+	@Override
+	public void stopService() {
+		startUpdate = false;
+		try {
+			processRealDataThread.join(50000);
+		} catch (Exception ex) {
+			logger.error(ex.getMessage(), ex);
+		}
+		try {
+			locationThread.join(50000);
+		} catch (Exception ex) {
+			logger.error(ex.getMessage(), ex);
+		}
+	}
+
+	/**
+	 * 批量更新实时库
+	 * 
+	 * @param realDataList
+	 */
+	public void batchUpdate(List realDataList) {
+		this.queryDao.batchUpdate("updateRealData", realDataList);
+	}
+
+	private void locationThreadFunc() {
+		while (startUpdate) {
+			try {
+				Date start = new Date();
+				ArrayList<String> keys = null;
+				//logger.error("获取Online");
+				// synchronized (onlineMap) {
+				keys = new ArrayList(onlineMap.keySet());
+				// }
+				//logger.error("获取Online结束");
+				int size = 0;
+				for (String simNo : keys) {
+					//logger.error("获取Rd");
+					GPSRealData rd = get(simNo);
+					// 根据有效的坐标，解析出地址，更新实时数据
+					//logger.error("获取location");
+					if (rd.getLatitude() > 0 && rd.getLongitude() > 0
+							&& rd.getOnline()) {
+						String location = locationService.getLocation(
+								rd.getLatitude(), rd.getLongitude());
+						if (StringUtil.isNullOrEmpty(location) == false) {
+							rd.setLocation(location);
+						}
+						size++;
+					}
+					//logger.error("获取location结束");
+				}
+				if (size > 0) {
+					Date end = new Date();
+					double seconds = DateUtil.getSeconds(start, end);
+					//logger.error("位置查询耗时:" + seconds + ",条数：" + size);
+				}
+			} catch (Exception e) {
+				logger.error(e.getMessage(), e);
+			}
+			//logger.error("位置线程正在运行");
+			try {
+				Thread.sleep(23 * 1150L);
+			} catch (InterruptedException e1) {
+				logger.error(e1.getMessage(), e1);
+			}
+		}
+	}
+
+	private void ProcessRealDataThreadFunc() {
+		//
+		while (startUpdate) {
+			try {
+				List<GPSRealData> result = new ArrayList<GPSRealData>();
+				// Set<String> keys = onlineMap.keySet();
+				ArrayList<String> keys = null;
+				// synchronized (onlineMap) {
+				keys = new ArrayList(onlineMap.keySet());
+				// }
+				for (String simNo : keys) {
+					GPSRealData rd = get(simNo);
+					if (rd.getOnline() == false)
+						continue;
+					// boolean online = checkOnline(rd);
+
+					// if (online == false) {
+					// onlineMap.remove(rd.getSimNo());// 如果已经离线，就不再更新
+					// }
+
+					if (rd.getID() == 0) {
+						this.saveRealData(rd);
+					} else {
+						rd.setUpdateDate(new Date());
+						result.add(rd);
+					}
+				}
+				if (result.size() > 0) {
+					Date start = new Date();
+					/**
+					 * 批量更新实时数据
+					 */
+					batchUpdate(result);
+
+					Date end = new Date();
+
+					// double seconds = DateUtil.getSeconds(start, end);
+					// logger.error("实时数据更新耗时:" + seconds + ",条数：" +
+					// result.size());
+
+				}
+				// logger.error("实时更新线程正在运行");
+			} catch (Exception e) {
+				logger.error(e.getMessage(), e);
+			}
+			try {
+				Thread.sleep(1000L);
+			} catch (InterruptedException e1) {
+			}
+		}
+	}
+
+	public void update(GPSRealData rd) {
+		onlineMap.put(rd.getSimNo(), new Date());
+		realDataMap.put(rd.getSimNo(), rd);
+	}
+
+	/*
+	 * @Override public void updateOnlineTime(String simNo) { GPSRealData rd =
+	 * this.get(simNo); if (rd == null) return; if (onlineMap.containsKey(simNo)
+	 * == false || rd.getOnline() == false) { rd.setOnline(true);
+	 * UpdateOnlineStatus(rd, true); } onlineMap.put(simNo, new Date()); }
+	 */
+
+	// 检测终端的上线状态
+	public Boolean checkOnline(GPSRealData rd, Date onlineTime) {
+		// 离线以最新数据包的时间间隔为准，不是以实时数据的间隔为准
+		boolean online = false;
+		// Date onlineTime = onlineMap.get(rd.getSimNo());
+		onlineMap.put(rd.getSimNo(), onlineTime);
+
+		if (onlineTime != null) {
+			double ts = DateUtil.getSeconds(onlineTime, new Date());
+			online = (ts < maxOfflineTime);
+		}
+
+		if (rd.getOnline() != online) {
+			logger.error(rd.getPlateNo() + (online ? "上线" : "下线"));
+			rd.setSendTime(onlineTime);
+			UpdateOnlineStatus(rd, online);
+		}
+		rd.setOnline(online);
+		return rd.getOnline();
+	}
+
+	/**
+	 * 更新上线状态，并创建上下线状态
+	 * 
+	 * @param rd
+	 * @param online
+	 */
+	private void UpdateOnlineStatus(final GPSRealData rd, boolean online) {
+		rd.setOnline(online);
+		fixedThreadPool.execute(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					saveRealData(rd);// 更新状态
+					alarmService.createOnlineChangeRecord(rd,
+							AlarmRecord.TYPE_OFFLINE);
+					alarmService.createOnlineChangeRecord(rd,
+							AlarmRecord.TYPE_ONLINE);
+				} catch (Exception e) {
+					logger.error(e.getMessage(), e);
+				}
+			}
+		});
+
+	}
+
+	public List<GPSRealData> getRealDataList(List<String> simNoList) {
+		List<GPSRealData> result = new ArrayList<GPSRealData>();
+		for (String simNo : simNoList) {
+			GPSRealData rd = get(simNo);
+			if (rd != null)
+				result.add(rd);
+		}
+		return result;
+	}
+
+	/**
+	 * 获取当前在线的实时数据列表
+	 * 
+	 * @return
+	 */
+	public List<GPSRealData> getOnlineRealDataList() {
+		List<GPSRealData> result = new ArrayList<GPSRealData>();
+		Set<String> keys = onlineMap.keySet();
+		for (String simNo : keys) {
+			GPSRealData rd = get(simNo);
+			result.add(rd);
+		}
+		return result;
+	}
+
+	public void saveRealData(GPSRealData rd) {
+		try {
+			getBaseDao().saveOrUpdate(rd);
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		}
+	}
+
+	public GPSRealData get(String simNo) {
+		GPSRealData rd = null;
+		if (realDataMap.containsKey(simNo)) {
+			rd = realDataMap.get(simNo);
+			// if (rd != null)
+			// return rd;
+		} else {
+			String hsql = "from GPSRealData gps where gps.simNo= ? ";
+			rd = (GPSRealData) getBaseDao().find(hsql, simNo);
+			if (rd == null) {
+				// logger.error("没找到实时数据:" + simNo);
+
+				VehicleData vd = vehicleService.getVehicleBySimNo(simNo);
+
+				if (vd == null) {
+					return null; // 该终端没有在后台录入，无法入库。
+				}
+
+				if (vd != null) {
+					rd = new GPSRealData();
+					rd.setSimNo(simNo);
+					rd.setVehicleId(vd.getEntityId());
+					rd.setPlateNo(vd.getPlateNo());
+					rd.setDepId(vd.getDepId());
+					try {
+						saveRealData(rd);
+					} catch (Exception e) {
+						logger.error(e.getMessage(), e);
+					}
+				}
+			}
+			rd.setOnline(false);
+			rd.setValid(false);
+			if(StringUtil.isNullOrEmpty(rd.getLocation()) && rd.getLatitude() > 0 && rd.getLongitude() > 0)
+			{
+				String location = locationService.getLocation(
+						rd.getLatitude(), rd.getLongitude());
+				if (StringUtil.isNullOrEmpty(location) == false) {
+					rd.setLocation(location);
+				}
+				this.saveRealData(rd);
+			}
+			realDataMap.put(simNo, rd);
+		}
+		
+		return rd;
+	}
+
+	public IBaseDao getBaseDao() {
+		return baseDao;
+	}
+
+	public void setBaseDao(IBaseDao baseDao) {
+		this.baseDao = baseDao;
+	}
+
+	public IVehicleService getVehicleService() {
+		return vehicleService;
+	}
+
+	public void setVehicleService(IVehicleService vehicleService) {
+		this.vehicleService = vehicleService;
+	}
+
+	public DaoIbatisImpl getQueryDao() {
+		return queryDao;
+	}
+
+	public void setQueryDao(DaoIbatisImpl queryDao) {
+		this.queryDao = queryDao;
+	}
+
+	public IAlarmService getAlarmService() {
+		return alarmService;
+	}
+
+	public void setAlarmService(IAlarmService alarmService) {
+		this.alarmService = alarmService;
+	}
+
+	public ILocationService getLocationService() {
+		return locationService;
+	}
+
+	public void setLocationService(ILocationService locationService) {
+		this.locationService = locationService;
+	}
+
+	public double getMaxOfflineTime() {
+		return maxOfflineTime;
+	}
+
+	public void setMaxOfflineTime(double maxOfflineTime) {
+		this.maxOfflineTime = maxOfflineTime;
+	}
+
+}

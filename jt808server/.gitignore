@@ -1,0 +1,10 @@
+/.settings
+/.externalToolBuilders
+/.myeclipse
+/lib/
+/logs/
+/bin/
+/.classpath
+/*.bak
+/.project
+/.DS_Store

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" default-autowire="byName" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd"
+	default-lazy-init="false">
+	
+	<!-- 809转发访问客户端 -->
+	<bean id="transferService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean"
+		lazy-init="true" scope="prototype">
+		<property name="serviceUrl">
+			<value>${rmi_url}/transferService</value>
+		</property>
+		<property name="serviceInterface">
+			<value>
+				com.ltmonitor.service.ITransferService
+			</value>
+		</property>
+	</bean>
+	
+	<!-- 实时数据服务端 -->
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
+		<property name="service">
+			<ref bean="realDataService" />
+		</property>
+		<property name="serviceName">
+			<value>realDataService</value>
+		</property>
+		<property name="serviceInterface">
+			<value>com.ltmonitor.service.IRealDataService</value>
+		</property>
+		<property name="registryPort" value="${realDataSevicePort}" />
+	</bean>
+	
+
+</beans>
