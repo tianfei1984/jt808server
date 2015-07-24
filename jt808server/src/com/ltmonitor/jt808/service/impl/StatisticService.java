@@ -6,9 +6,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.log4j.Logger;
-
 import com.ltmonitor.dao.IBaseDao;
 import com.ltmonitor.dao.impl.DaoIbatisImpl;
 import com.ltmonitor.entity.AlarmRecord;
@@ -16,13 +14,11 @@ import com.ltmonitor.entity.Department;
 import com.ltmonitor.entity.FuelChangeRecord;
 import com.ltmonitor.entity.FuelConsumption;
 import com.ltmonitor.entity.FuelRecord;
-import com.ltmonitor.entity.GPSRealData;
 import com.ltmonitor.entity.GpsMileage;
 import com.ltmonitor.entity.OnlineStatic;
 import com.ltmonitor.entity.VehicleData;
 import com.ltmonitor.entity.VehicleOnlineRate;
 import com.ltmonitor.jt808.service.IStatisticService;
-import com.ltmonitor.service.IQueryService;
 import com.ltmonitor.util.DateUtil;
 
 /**
@@ -129,8 +125,8 @@ public class StatisticService implements IStatisticService // :
 		for (Object obj : result) {
 			java.util.HashMap ht = (java.util.HashMap) obj;
 			String plateNo = (String) ht.get("plateNo");
-			double mileage = 0;
-			double gas = 0;
+			double mileage = 0;	//当前车辆里程
+			double gas = 0;	//当前车辆油量
 			if (ht.get("mileage") != null)
 				mileage = Double.parseDouble("" + ht.get("mileage"));
 			if (ht.get("gas") != null)
@@ -138,10 +134,8 @@ public class StatisticService implements IStatisticService // :
 			try {
 				GpsMileage gm = gpsMileageMap.get(plateNo);
 				if (gm == null) {
-					if (gm == null) {
-						gm = new GpsMileage();
-						gm.setPlateNo(plateNo);
-					}
+					gm = new GpsMileage();
+					gm.setPlateNo(plateNo);
 				}
 				FuelConsumption fc = new FuelConsumption();
 				fc.setPlateNo(plateNo);
@@ -216,7 +210,6 @@ public class StatisticService implements IStatisticService // :
 					}
 				}
 				FuelConsumption fc = new FuelConsumption();
-
 				fc.setMileage1(gm.getMileageLastDay());
 				fc.setMileage2(mileage);
 				fc.setGas1(gm.getGasLastDay());
@@ -224,7 +217,6 @@ public class StatisticService implements IStatisticService // :
 				fc.setMileage(fc.getMileage2() - fc.getMileage1());
 				fc.setGas(fc.getGas2() - fc.getGas1());
 				fc.setStaticDate(new java.util.Date());
-
 				Calendar cal = Calendar.getInstance();
 				cal.setTime(new Date());
 				fc.setHour(cal.get(Calendar.HOUR_OF_DAY));
@@ -347,7 +339,6 @@ public class StatisticService implements IStatisticService // :
 	public void staticVehicleOnlineRate() {
 		try {
 			Date staticDate = DateUtil.getDate(new Date()); // 统计前一天的上线率
-
 			Date startDate = staticDate;
 			Date endDate = new Date();
 			logger.warn("开始统计车辆上线率,统计时间段:" + startDate + "," + endDate);

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN 2.0//EN" "http://www.springframework.org/dtd/spring-beans-2.0.dtd">
 <beans>
+	<!-- 总调度管理 -->
 	<bean name="quartzScheduler"
 		class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
 		<property name="triggers">
@@ -16,7 +17,8 @@
 		</property>
 		<property name="configLocation" value="classpath:/quartz.properties" />
 	</bean>
- <!-- 上线率统计 -->
+	<!-- 定义触发时间 -->
+ 	<!-- 部门上线率统计 -->
 	<bean id="cronTriggerForDepOnlineRate" class="org.springframework.scheduling.quartz.CronTriggerBean">
 		<property name="jobDetail" ref="staticDepOnineRateByHour" />
 		<!--朝九晚五工作时间内每半小时执行一次 "0 0/30 9-17 *,* * ?"-->
@@ -29,26 +31,33 @@
 		<!-- 每个5分钟执行一次 -->
 		<property name="cronExpression" value="0 0/5 * * * ?" />
 	</bean>
+	<!-- 车辆里程统计 每小时一次 -->
 	<bean id="cronTriggerForMileageStaticByHour" class="org.springframework.scheduling.quartz.CronTriggerBean">
 		<property name="jobDetail" ref="StaticMileageByHour" />
 		<!-- 每小时执行一次 -->
 		<property name="cronExpression" value="0 0 0/1 * * ?" />
 	</bean>
+	<!-- 车辆进程统计 每天一次 -->
 	<bean id="cronTriggerForMileageStaticByDay" class="org.springframework.scheduling.quartz.CronTriggerBean">
 		<property name="jobDetail" ref="StaticMileageByDay" />
 		<!-- 每天一次 -->
 		<property name="cronExpression" value="0 0 0 1/1 * ?" />
 	</bean>
+	
+	<!--  车辆上线率统计 -->
 	<bean id="cronTriggerForVehicleOnlineRateByDay" class="org.springframework.scheduling.quartz.CronTriggerBean">
 		<property name="jobDetail" ref="staticVehicleOnineRateByDay" />
 		<!-- 每天1点一次 -->
 		 <property name="cronExpression" value="0 0 1 * * ?" /> 
 	</bean>
+	
+	<!-- 定时生成gps_hisdata库中的 gpsinfo和newalarm表 -->
 	<bean id="cronTriggerForCreateGpsInfoTableByDay" class="org.springframework.scheduling.quartz.CronTriggerBean">
 		<property name="jobDetail" ref="createGpsInfoTableEveryDay" />
 		<!-- 每天23点一次 -->
 		 <property name="cronExpression" value="0 0 17 * * ?" /> 
 	</bean>
+	
 	<!-- 夜间行驶统计 -->
 	<bean id="cronTriggerForNightDrivingAlarm" class="org.springframework.scheduling.quartz.CronTriggerBean">
 		<property name="jobDetail" ref="staticNightDriving" />
@@ -56,6 +65,7 @@
 		 <property name="cronExpression" value="0/30 0 2-5 * * ?" /> 		
 	</bean>
 	
+	<!-- 定义调用对象、调用方法 -->
 	<!-- 夜间行驶统计-->
 	<bean id="staticNightDriving"
 		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
@@ -91,6 +101,7 @@
 		<property name="targetMethod" value="StaticMileageByMinute" />
 	</bean>
 	
+	<!-- 按小时统计车辆里程 -->
 	<bean id="StaticMileageByHour"
 		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
 		<property name="targetObject" ref="statisticService" />
@@ -103,7 +114,6 @@
 		<property name="targetObject" ref="statisticService" />
 		<property name="targetMethod" value="CreateTableForGpsInfo" />
 	</bean>
-	
 
 	<!-- 定时器检查类 -->
 	<bean id="statisticService" class="com.ltmonitor.jt808.service.impl.StatisticService"

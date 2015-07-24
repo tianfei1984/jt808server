@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
@@ -175,7 +176,7 @@ public class CommandService implements ICommandService {
 	public final void ParseCommand() {
 		String hsql = "from TerminalCommand where CreateDate > ? and Status = ? ";
 		Date startTime = DateUtil.getDate(DateUtil.now(), Calendar.MINUTE, -5);
-		java.util.List result = getBaseDao().query(hsql,
+		List result = getBaseDao().query(hsql,
 				new Object[] { startTime, TerminalCommand.STATUS_NEW });
 
 		for (Object obj : result) {

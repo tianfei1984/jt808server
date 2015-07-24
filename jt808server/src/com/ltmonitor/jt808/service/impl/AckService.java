@@ -250,7 +250,6 @@ public class AckService implements IAckService {
 			if (transferTo809Enabled) {
 				this.transferRegister(simNo);
 			}
-
 		} else if (msgType == 0x0001) {
 			// 如果是终端通用应答，就更新数据库的指令状态为已应答
 			JT_0001 answerData = (JT_0001) msgFromTerminal.getMessageContents();
@@ -326,12 +325,11 @@ public class AckService implements IAckService {
 				if (cmdData != null && checkRegister) {
 					ackResult = this.authencateNo.equals(cmdData.getRegisterNo()) ? 0 : 1; // 鉴权成功或失败
 				}
-				if(ackResult == 0){
-					//设置终端上线
-					realDataService.updateOnlineStatus(simNo, true);
-				}
-			} else if (msgType == 0x0200 && ack0200PacketDisabled) {
-				// return;
+				//终端鉴权成功，并成功上传GPS包认为是上线
+//				if(ackResult == 0){
+//					//设置终端上线
+//					realDataService.updateOnlineStatus(simNo, true);
+//				}
 			}
 			// 对于终端发送的其他命令，平台一律进行通用应答
 			JT_8001 echoData = new JT_8001();
@@ -370,10 +368,6 @@ public class AckService implements IAckService {
 			vi.setUpdateDate(new Date());
 			BaseDao.save(vi);
 
-			if (transferTo809Enabled == false)
-				return;
-
-//			this.transferGpsService.transferRegisterInfo(vi); // 终端鉴权后，上传注册信息
 		} catch (Exception ex) {
 			logger.error(ex.getMessage());
 			logger.error(ex.getStackTrace());

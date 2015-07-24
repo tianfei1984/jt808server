@@ -134,7 +134,9 @@ public class T808Manager implements IT808Manager {
 			//启动终端下发命令服务
 			getCommandService().Start();
 		    this.commandService.setOnRecvCommand(new ICommandHandler(){
-
+		    	/**
+		    	 * 向终端下发命令
+		    	 */
 				@Override
 				public boolean OnRecvCommand(T808Message tm, TerminalCommand tc) {
 					if(getJt808Server().isOnline(tc.getSimNo()) == false)

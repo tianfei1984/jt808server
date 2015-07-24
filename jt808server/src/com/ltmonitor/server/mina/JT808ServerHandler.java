@@ -25,7 +25,7 @@ public class JT808ServerHandler extends IoHandlerAdapter {
 	private Logger logger = Logger.getLogger(JT808ServerHandler.class);
 
 	private IMessageProcessService messageProcessService;
-
+	//终端连接集合
 	private static ConcurrentMap<String, GpsConnection> connctionMap = new ConcurrentHashMap<String, GpsConnection>();
 	
 	private IRealDataService realDataService;
@@ -119,8 +119,6 @@ public class JT808ServerHandler extends IoHandlerAdapter {
 				conn.setConnected(false);
 				conn.setDisconnectTimes(conn.getDisconnectTimes() + 1);
 			}
-			//设置终端离线
-			realDataService.updateOnlineStatus(simNo, false);
 		}
 		session.close(true);
 		this.logger.info("与本地服务器断开连接, SimNo:" + simNo);

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN 2.0//EN" "http://www.springframework.org/dtd/spring-beans-2.0.dtd">
 <beans default-autowire="byName" default-lazy-init="true">
-
+	
+	<!-- 终端上行数据包处理 -->
 	<bean id="gpsDataService" class="com.ltmonitor.jt808.service.impl.GpsDataService"  init-method="start"  destroy-method="stopService">
 		<property name="baseDao" ref="baseDao"></property>
 		<property name="uploadDir" value="${imagePath}"></property>
@@ -9,10 +10,11 @@
 			<value>${enableSaveDb}</value>
 		</property>
 	</bean>
-
+	
+	<!-- 终端上行数据处理接口 -->
 	<bean id="messageProcessService" class="com.ltmonitor.jt808.service.impl.MessageProcessService">
 	</bean>
-
+	<!-- JT808对外接口 -->
 	<bean id="t808Manager" class="com.ltmonitor.jt808.service.impl.T808Manager">
 		<property name="listenPort" value="${listenPort}"></property>
 		<property name="enable808Tranasfer" value="${enable808Tranasfer}"></property>
@@ -26,27 +28,26 @@
 	
 	</bean>
 	
-	
+	<!-- 多媒体服务 -->
 	<bean id="mediaService" class="com.ltmonitor.jt808.service.impl.MediaService">
 		<property name="uploadDir" value="${imagePath}"></property>
-		 
 		<property name="mediaUploadTimeOut" value="${mediaUploadTimeOut}"></property>
 		<property name="maxRetransTimes" value="${maxRetransTimes}"></property>
-		
 	</bean>
+	
 	<!-- 工厂方法 -->
 	<bean id="jt808Server" factory-bean="jt808ServerFactory" factory-method="getJt808Server" />
 	<!-- 工厂配置，根据transpor配置参数来决定是upd还是tcp -->
 	<bean id="jt808ServerFactory" class="com.ltmonitor.server.mina.JT808ServerFactory">
 		<property name="transport" value="${transport}"></property>
 	</bean>
-
+	<!-- TCP服务 -->
 	<bean id="jt808TcpServer" class="com.ltmonitor.server.mina.JT808TcpServer">
 		<property name="maxOfflineTime">
 			<value>${maxOfflineTime}</value>
 		</property>
 	</bean>
-	
+	<!-- UDP服务 -->
 	<bean id="jt808UdpServer" class="com.ltmonitor.server.mina.JT808UdpServer">
 	</bean>
 	 <!--  JT808业务处理器 -->
@@ -57,6 +58,7 @@
 	<bean id="commandService" class="com.ltmonitor.jt808.service.impl.CommandService">
 	</bean>
 	
+	<!-- 夜间驾驶 -->
 	<bean id="nightDrivingAlarmService" class="com.ltmonitor.jt808.service.impl.NightDrivingAlarmService">
 	</bean>
 	
@@ -71,6 +73,7 @@
 	<bean id="alarmService" class="com.ltmonitor.jt808.service.impl.AlarmNewService" init-method="start" destroy-method="stopService">
 	</bean>
 	
+	<!-- 车辆上下线记录服务 -->
 	<bean id="onlineRecordService" class="com.ltmonitor.jt808.service.impl.OnlineRecordService" >
 	</bean>
 	
@@ -78,7 +81,7 @@
 	<bean id="newAlarmService" class="com.ltmonitor.jt808.service.impl.NewAlarmService" init-method="start" destroy-method="stopService">
 	</bean>
 	
-
+	<!-- 平台对终端消息应答服务 -->
 	<bean id="ackService" class="com.ltmonitor.jt808.service.impl.AckService">
 		<property name="checkRegister">
 			<value>${checkRegister}</value>
@@ -86,21 +89,22 @@
 		<property name="transferTo809Enabled">
 			<value>${transferTo809Enabled}</value>
 		</property>
-		
 		<property name="ack0200PacketDisabled">
 			<value>${ack0200PacketDisabled}</value>
 		</property>
 	</bean>
-
+	
+	<!-- 位置 服务接口 -->
 	<bean id="locationService" class="com.ltmonitor.service.impl.LocationService">
 	</bean>
 
+	<!-- 平台电子围栏报警服务 -->
 	<bean id="areaAlarmService" class="com.ltmonitor.jt808.service.impl.AreaAlarmService" init-method="start" destroy-method="stopService">
 		<property name="areaAlarmEnabled" value="${areaAlarmEnabled}">
 		</property>
 	</bean>
 
-
+	<!-- JT808向JT809消息转发接口 -->
 	<bean id="transferGpsService" class="com.ltmonitor.jt808.service.impl.TransferGpsService">
 		<property name="transferTo809Enabled">
 			<value>${transferTo809Enabled}</value>

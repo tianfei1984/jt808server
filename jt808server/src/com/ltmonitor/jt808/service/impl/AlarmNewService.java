@@ -83,7 +83,7 @@ public class AlarmNewService implements IAlarmService {
 		} catch (Exception ex) {
 			logger.error(ex.getMessage(),ex);
 		}
-		this.getAlarmConfig();
+//		this.getAlarmConfig();
 	}
 
 	@Override

@@ -44,8 +44,7 @@ public class NightDrivingAlarmService implements INightDrivingAlarmService {
 		try {
 			List<GPSRealData> ls = realDataService.getOnlineRealDataList();
 			for (GPSRealData rd : ls) {
-				String alarmKey = rd.getPlateNo() + "_"
-						+ AlarmRecord.TYPE_NIGHT_DRIVING;
+				String alarmKey = rd.getPlateNo() + "_" + AlarmRecord.TYPE_NIGHT_DRIVING;
 
 				if (rd.getVelocity() < minSpeed || rd.getOnline() == false) {
 					if (alarmMap.containsKey(alarmKey))

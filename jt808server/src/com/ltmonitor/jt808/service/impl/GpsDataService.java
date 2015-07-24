@@ -274,6 +274,7 @@ public class GpsDataService implements IGpsDataService {
 		}
 
 		if (tc != null) {
+			//更新查询终端参数命令
 			commandId = tc.getEntityId();
 			commandService.UpdateStatus(msg.getSimNo(), sn,
 					TerminalCommand.STATUS_SUCCESS);
@@ -340,13 +341,11 @@ public class GpsDataService implements IGpsDataService {
 	 */
 	private void vodThreadFunc() {
 		while (true) {
-
 			Set<String> keys = this.inforIdMap.keySet();
 			for (String simNo : keys) {
 				VehicleData vd = this.realDataService.getVehicleData(simNo);
 				int inforId = inforIdMap.get(simNo);
-				List<BasicData> bdList = baseService.getInformationByType(""
-						+ inforId);
+				List<BasicData> bdList = baseService.getInformationByType("" + inforId);
 				for (BasicData information : bdList) {
 					// 信息下发
 					TerminalCommand tc = new TerminalCommand();
@@ -537,7 +536,7 @@ public class GpsDataService implements IGpsDataService {
 		} else if (headerType == 0x0701) {
 			// 电子运单数据
 			saveEWayBill(message);
-
+			//添加电子运单命令
 			JT_0701 rd = (JT_0701) message.getMessageContents();
 			TerminalCommand tc = new TerminalCommand();
 			tc.setCmdType(headerType);
@@ -554,7 +553,6 @@ public class GpsDataService implements IGpsDataService {
 			tc.setStatus(TerminalCommand.STATUS_SUCCESS);
 
 			this.baseDao.save(tc);
-
 		} else if (headerType == 0x0702) {
 			// 驾驶员主动上报信息
 			this.saveDriver(message);
@@ -838,6 +836,7 @@ public class GpsDataService implements IGpsDataService {
 			transfer(rd, gi); // 转发服务
 			alarmService.processRealData(rd);// 报警服务
 			if (Tools.isNullOrEmpty(rd.getPlateNo()) == false) {
+				//	更新车辆GPS实时信息
 				realDataService.update(rd);
 			}
 		} catch (Exception ex) {
@@ -957,7 +956,7 @@ public class GpsDataService implements IGpsDataService {
 		if (driver == null) {
 			driver = new DriverInfo();
 			driver.setVehicleId(vd.getEntityId());
-			driver.setVehicleId(vd.getEntityId());
+//			driver.setVehicleId(vd.getEntityId());
 		}
 		if (vd != null) {
 			if (rd != null) {

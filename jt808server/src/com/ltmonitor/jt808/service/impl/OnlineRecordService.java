@@ -32,7 +32,9 @@ public class OnlineRecordService implements IOnlineRecordService {
 	private IAlarmService alarmService;
 	private static Logger logger = Logger.getLogger(OnlineRecordService.class);
 	private ConcurrentLinkedQueue<OnlineRecord> dataQueue = new ConcurrentLinkedQueue<OnlineRecord>();
-
+	/** 
+	 * 终端在线集合:simNo
+	 */
 	private ConcurrentMap<String, Boolean> onlineMap = new ConcurrentHashMap<String, Boolean>();
 	/**
 	 * 服务器各个连接的状态
@@ -149,7 +151,6 @@ public class OnlineRecordService implements IOnlineRecordService {
 	public void createOnlineChangeRecord(OnlineRecord rd) {
 		String alarmType = rd.getChildType();
 		String hsql = "from OnlineRecord rec where rec.plateNo = ? and rec.status = ? and rec.childType = ?";
-		// 鏌ョ湅鏄惁鏈夋湭娑堥櫎鐨勬姤璀﹁褰?
 		OnlineRecord sr = (OnlineRecord) getBaseDao().find(
 				hsql,
 				new String[] { rd.getPlateNo(), OnlineRecord.STATUS_NEW,
@@ -177,7 +178,6 @@ public class OnlineRecordService implements IOnlineRecordService {
 			sr.setVelocity(rd.getVelocity());
 			sr.setChildType(alarmType);
 			getBaseDao().saveOrUpdate(sr);
-
 		} else if (OnlineRecord.STATUS_OLD.equals(rd.getStatus()) && sr != null) {
 			sr.setEndTime(rd.getStartTime());
 			double t = DateUtil.getSeconds(sr.getStartTime(), sr.getEndTime()) / 60;

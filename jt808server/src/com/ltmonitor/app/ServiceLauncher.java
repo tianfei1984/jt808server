@@ -1,12 +1,8 @@
 package com.ltmonitor.app;
 
-import java.net.URL;
-
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import com.ltmonitor.dao.IBaseDao;
 import com.ltmonitor.entity.VehicleData;
 import com.ltmonitor.jt808.service.IGpsDataService;

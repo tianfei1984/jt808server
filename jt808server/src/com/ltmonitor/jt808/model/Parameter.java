@@ -1,5 +1,9 @@
  package com.ltmonitor.jt808.model;
- 
+ /**
+  *  ²ÎÊıÀà
+  * @author tianfei
+  *
+  */
  public class Parameter
  {
    private int platformPort;

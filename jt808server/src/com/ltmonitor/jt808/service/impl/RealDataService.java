@@ -43,7 +43,9 @@ public class RealDataService implements IRealDataService {
 	 * 实时更新时间的数据
 	 */
 	public ConcurrentMap<String, Date> onlineMap = new ConcurrentHashMap<String, Date>();
-
+	/**
+	 *  实时数据更新时间 
+	 */
 	private HashMap<String, Date> updateMap = new HashMap<String, Date>();
 
 	// 车辆数据缓存
@@ -73,8 +75,6 @@ public class RealDataService implements IRealDataService {
 	 */
 	private ConcurrentMap<String, Boolean> connectedStateMap = new ConcurrentHashMap<String, Boolean>();
 	
-	
-
 	/**
 	 * 线程池，默认是50个
 	 */
@@ -157,7 +157,7 @@ public class RealDataService implements IRealDataService {
 					// 根据有效的坐标，解析出地址，更新实时数据
 					// logger.error("获取location");
 					Date lastupDate = updateMap.get(simNo);
-					if(!rd.getOnline() && lastupDate != null && lastupDate.compareTo(rd.getSendTime())>=0){
+					if(lastupDate != null && lastupDate.compareTo(rd.getSendTime())>=0){
 						continue;
 					}
 					if (rd.getLatitude() > 0 && rd.getLongitude() > 0) {
@@ -169,17 +169,12 @@ public class RealDataService implements IRealDataService {
 					}
 					// logger.error("获取location结束");
 				}
-//				if (size > 0) {
-//					Date end = new Date();
-//					double seconds = DateUtil.getSeconds(start, end);
-//					// logger.error("位置查询耗时:" + seconds + ",条数：" + size);
-//				}
 			} catch (Exception e) {
 				logger.error(e.getMessage(), e);
 			}
 			// logger.error("位置线程正在运行");
 			try {
-				Thread.sleep(23 * 1150L);
+				Thread.sleep(23 * 1000L);
 			} catch (InterruptedException e1) {
 				logger.error(e1.getMessage(), e1);
 			}
@@ -198,22 +193,14 @@ public class RealDataService implements IRealDataService {
 				// }
 				for (String simNo : keys) {
 					GPSRealData rd = get(simNo);
-					// 已经掉线的不再更新
-//					if (rd.getOnline() == false)
-//						continue;
-//					boolean changed = isOnlineStateChanged(rd);
+					boolean changed = isOnlineStateChanged(rd);
 					Date lastUpdateDate = updateMap.get(simNo);
-//					if (changed == false && lastUpdateDate != null) {
-					if (lastUpdateDate != null) {
+					if (changed == false && lastUpdateDate != null) {
 						if (lastUpdateDate.compareTo(rd.getSendTime()) >= 0) {
 							// 实时数据没有变化的不再更新
 							continue;
 						}
 					}
-					// if (online == false) {
-					// onlineMap.remove(rd.getSimNo());// 如果已经离线，就不再更新
-					// }
-
 					if (rd.getID() == 0) {
 						this.saveRealData(rd);
 					} else {
@@ -244,6 +231,9 @@ public class RealDataService implements IRealDataService {
 		}
 	}
 
+	/**
+	 * 更新车辆实时GPS信息
+	 */
 	public void update(GPSRealData rd) {
 		rd.setOnlineDate(new Date());
 		// rd.setOnline(true);
@@ -292,7 +282,7 @@ public class RealDataService implements IRealDataService {
 		}
 		boolean changed = rd.getOnline() != online;
 		if (changed) {
-			//终端超时退出
+			//终端上线或超时退出
 			rd.setOnline(online);
 			rd.setSendTime(onlineTime);
 			onlineRecordService.checkOnline(rd);
