@@ -47,6 +47,10 @@ public class RealDataService implements IRealDataService {
 	 *  实时数据更新时间 
 	 */
 	private HashMap<String, Date> updateMap = new HashMap<String, Date>();
+	/**
+	 * 更新位置信息时间 
+	 */
+	private HashMap<String, Date> updateLocationMap = new HashMap<String, Date>();
 
 	// 车辆数据缓存
 	private ConcurrentMap<String, VehicleData> vehicleMap = new ConcurrentHashMap<String, VehicleData>();
@@ -103,13 +107,25 @@ public class RealDataService implements IRealDataService {
 
 		String hql = "from GPSRealData where online = ? and simNo is not null";
 		List ls = this.baseDao.query(hql, true);
+		List<GPSRealData> list = new ArrayList<GPSRealData>();
 		for (Object obj : ls) {
 			GPSRealData rd = (GPSRealData) obj;
+			if(rd.getOnline()){
+				//将数据库中在线的修改为不在线
+				rd.setOnline(false);
+				rd.setUpdateDate(new Date());
+				list.add(rd);
+			}
 			// rd.setSendTime(new Date());
 			//rd.setOnlineDate(new Date());
 			this.realDataMap.put(rd.getSimNo(), rd);
 			this.updateMap.put(rd.getSimNo(), rd.getSendTime());
 			this.onlineMap.put(rd.getSimNo(), new Date());
+			this.updateLocationMap.put(rd.getSimNo(), new Date());
+		}
+		//批量更新实时状态
+		if(!list.isEmpty()){
+			batchUpdate(list);
 		}
 	}
 
@@ -150,13 +166,12 @@ public class RealDataService implements IRealDataService {
 				keys = new ArrayList(onlineMap.keySet());
 				// }
 				// logger.error("获取Online结束");
-				int size = 0;
 				for (String simNo : keys) {
 					// logger.error("获取Rd");
 					GPSRealData rd = get(simNo);
 					// 根据有效的坐标，解析出地址，更新实时数据
 					// logger.error("获取location");
-					Date lastupDate = updateMap.get(simNo);
+					Date lastupDate = updateLocationMap.get(simNo);
 					if(lastupDate != null && lastupDate.compareTo(rd.getSendTime())>=0){
 						continue;
 					}
@@ -164,8 +179,8 @@ public class RealDataService implements IRealDataService {
 						String location = locationService.getLocation(rd.getLatitude(), rd.getLongitude());
 						if (StringUtil.isNullOrEmpty(location) == false) {
 							rd.setLocation(location);
+							updateLocationMap.put(simNo, new Date());
 						}
-						size++;
 					}
 					// logger.error("获取location结束");
 				}
@@ -495,7 +510,9 @@ public class RealDataService implements IRealDataService {
 		if(rd != null){
 			rd.setOnline(onlineStatue);
 			rd.setOnlineDate(new Date());
-			rd.setSendTime(new Date());
+//			rd.setSendTime(new Date());
+			//更新车辆实时信息
+			saveRealData(rd);
 			onlineRecordService.checkOnline(rd);
 		}
 	}

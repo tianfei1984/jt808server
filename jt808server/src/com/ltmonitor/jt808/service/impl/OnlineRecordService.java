@@ -131,7 +131,7 @@ public class OnlineRecordService implements IOnlineRecordService {
 		r.setVelocity(rd.getVelocity());
 		String alarmType = rd.getOnline() ? OnlineRecord.TYPE_ONLINE : OnlineRecord.TYPE_OFFLINE;
 		r.setChildType(alarmType);
-
+		//终端上线、下张告警
 		if (alarmService.isAlarmEnabled(alarmType,AlarmRecord.ALARM_FROM_PLATFORM)) {
 			this.newAlarmService.insertAlarm(AlarmRecord.ALARM_FROM_PLATFORM,alarmType, rd);
 		}

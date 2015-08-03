@@ -1031,7 +1031,7 @@ public class GpsDataService implements IGpsDataService {
 	// List<Byte> bytes = new ArrayList<Byte>();
 
 	private void SaveVehicleRecorder(T808Message msg) {
-		logger.error("是否分包:" + msg.getHeader().getIsPackage() + ",分包号:"
+		logger.info("是否分包:" + msg.getHeader().getIsPackage() + ",分包号:"
 				+ msg.getHeader().getMessagePacketNo() + ",分包:"
 				+ msg.getHeader().getMessageTotalPacketsCount());
 
@@ -1040,8 +1040,6 @@ public class GpsDataService implements IGpsDataService {
 		VehicleData vd = realDataService.getVehicleData(msg.getSimNo());
 
 		if (vd == null)
-			return;
-		if (rd == null)
 			return;
 
 		// 响应流水号
@@ -1066,7 +1064,7 @@ public class GpsDataService implements IGpsDataService {
 		}
 		List<VehicleRecorder> result = new ArrayList<VehicleRecorder>();
 		byte cmdWord = recorderData.getCommandWord();
-		logger.error(cmdWord + ',' + recorderData.toString());
+		logger.info(cmdWord + ',' + recorderData.toString());
 		if (cmdWord == 0x05) {
 			Recorder_SpeedIn360Hours dv = (Recorder_SpeedIn360Hours) recorderData;
 			for (Date key : dv.getSpeedsIn360Hours().keySet()) {
@@ -1424,7 +1422,7 @@ public class GpsDataService implements IGpsDataService {
 			}
 			mi.setSendTime(dt); // 取自位置时间
 
-			mi.setCommandType(MediaItem.UPLOAD); // 根据上传命令的应答
+			mi.setCommandType(MediaItem.SEARCH); // 根据上传命令的应答
 			try {
 				// 记录下上传的文件列表，便于检索
 				getBaseDao().saveOrUpdate(mi);

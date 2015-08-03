@@ -248,7 +248,7 @@ public class JT808Common
 	}
 
 	public static boolean isNew808Protocol() {
-		new808Protocol = true;
+		new808Protocol = false;
 		return new808Protocol;
 	}
 
