@@ -293,7 +293,7 @@ public class MediaService implements IMediaService {
 		String fileName = mi.getPlateNo() + "_"
 				+ DateUtil.toStringByFormat(new Date(), "yyyy-MM-dd-HH-mm-ss")
 				+ "." + format[uploadMediaMsg.getMultidediaCodeFormat()];
-		String fullFileName = getUploadDir() + "\\" + fileName;
+		String fullFileName = getUploadDir() + "/" + fileName;
 		mi.setFileName(fileName);
 
 		try {
