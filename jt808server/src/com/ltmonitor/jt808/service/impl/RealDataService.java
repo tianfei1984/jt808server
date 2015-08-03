@@ -193,9 +193,10 @@ public class RealDataService implements IRealDataService {
 				// }
 				for (String simNo : keys) {
 					GPSRealData rd = get(simNo);
-					boolean changed = isOnlineStateChanged(rd);
+//					boolean changed = isOnlineStateChanged(rd);
 					Date lastUpdateDate = updateMap.get(simNo);
-					if (changed == false && lastUpdateDate != null) {
+//					if (changed == false && lastUpdateDate != null) {
+					if (lastUpdateDate != null) {
 						if (lastUpdateDate.compareTo(rd.getSendTime()) >= 0) {
 							// 实时数据没有变化的不再更新
 							continue;

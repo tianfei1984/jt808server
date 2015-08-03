@@ -325,11 +325,11 @@ public class AckService implements IAckService {
 				if (cmdData != null && checkRegister) {
 					ackResult = this.authencateNo.equals(cmdData.getRegisterNo()) ? 0 : 1; // 鉴权成功或失败
 				}
-				//终端鉴权成功，并成功上传GPS包认为是上线
-//				if(ackResult == 0){
-//					//设置终端上线
-//					realDataService.updateOnlineStatus(simNo, true);
-//				}
+//				终端鉴权成功
+				if(ackResult == 0){
+					//设置终端上线
+					realDataService.updateOnlineStatus(simNo, true);
+				}
 			}
 			// 对于终端发送的其他命令，平台一律进行通用应答
 			JT_8001 echoData = new JT_8001();

@@ -118,6 +118,8 @@ public class JT808ServerHandler extends IoHandlerAdapter {
 				// connctionMap.remove(simNo);
 				conn.setConnected(false);
 				conn.setDisconnectTimes(conn.getDisconnectTimes() + 1);
+				//³µÁ¾ÏÂÏß
+				realDataService.updateOnlineStatus(simNo, false);
 			}
 		}
 		session.close(true);
