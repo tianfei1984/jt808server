@@ -32,7 +32,6 @@ public class Recorder_DriverVehicleCode implements IRecorderDataBlock
 	}
 	/** 
 	 机动车驾驶证号,ASCII码
-	 
 	*/
 	private String driverLicenseNo;
 	public final String getDriverLicenseNo()

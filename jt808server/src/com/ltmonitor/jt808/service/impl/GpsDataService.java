@@ -65,6 +65,7 @@ import com.ltmonitor.jt808.service.ICommandService;
 import com.ltmonitor.jt808.service.IGpsDataService;
 import com.ltmonitor.jt808.service.IMediaService;
 import com.ltmonitor.jt808.service.ITransferGpsService;
+import com.ltmonitor.jt808.service.IVehicleRecorderService;
 import com.ltmonitor.jt808.tool.Tools;
 import com.ltmonitor.jt809.entity.DriverModel;
 import com.ltmonitor.service.IBaseService;
@@ -110,6 +111,12 @@ public class GpsDataService implements IGpsDataService {
 	private ITransferGpsService transferGpsService;
 
 	private IMediaService mediaService;
+	
+	/**
+	 *  行车记录仪服务
+	 */
+	private IVehicleRecorderService vehicleRecorderService;
+	
 	/**
 	 * 实时数据服务
 	 */
@@ -521,7 +528,8 @@ public class GpsDataService implements IGpsDataService {
 			this.SaveMediaSearchItem(message);
 		} else if (headerType == 0x0700) {
 			// 行车记录仪数据
-			SaveVehicleRecorder(message);
+			vehicleRecorderService.processMediaMsg(message);
+//			SaveVehicleRecorder(message);
 		} else if (headerType == 0x0704) {
 			// 定位补报，需要将补报的定位信息批量入库
 			JT_0704 rd = (JT_0704) message.getMessageContents();
@@ -1504,5 +1512,15 @@ public class GpsDataService implements IGpsDataService {
 	public void setMediaService(IMediaService mediaService) {
 		this.mediaService = mediaService;
 	}
+
+	public IVehicleRecorderService getVehicleRecorderService() {
+		return vehicleRecorderService;
+	}
+
+	public void setVehicleRecorderService(
+			IVehicleRecorderService vehicleRecorderService) {
+		this.vehicleRecorderService = vehicleRecorderService;
+	}
+	
 
 }

@@ -1,5 +1,6 @@
 ﻿package com.ltmonitor.jt808.service.impl;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -63,6 +64,7 @@ import com.ltmonitor.jt808.protocol.RectangleAreaItem;
 import com.ltmonitor.jt808.protocol.RouteTurnPointItem;
 import com.ltmonitor.jt808.protocol.T808Message;
 import com.ltmonitor.jt808.protocol.T808MessageHeader;
+import com.ltmonitor.jt808.protocol.jt2012.JT2012_8700;
 import com.ltmonitor.jt808.service.ICommandHandler;
 import com.ltmonitor.jt808.service.ICommandService;
 import com.ltmonitor.jt808.tool.Tools;
@@ -758,16 +760,21 @@ public class CommandService implements ICommandService {
 			cmdData.setFrequency(Byte.parseByte(fields[3]));
 		} else if (tc.getCmdType() == JT808Constants.CMD_VEHICLE_RECORDER) {
 			// 行车记录仪数据采集命令
-			JT_8700 cmdData = new JT_8700();
-			ts.setMessageContents(cmdData);
-			String[] fields = tc.getCmdData().split("[;]", -1);
-			cmdData.setCommandWord(Byte.parseByte(fields[0])); // 命令字
-			// cmdDat = uShort.parseShort(fields[1]);
-			cmdData.setRepassPacketsCount((byte) 0); // 不需要重传包
-			
 			if(vehicleRecorderVersion!=null && vehicleRecorderVersion.equals("2012"))
 			{
-				
+				//2012
+				JT2012_8700  cmdData = new JT2012_8700();
+				ts.setMessageContents(cmdData);
+				String[] fields = tc.getCmdData().split("[;]", -1);
+				cmdData.setCommandWord(Byte.parseByte(fields[0])); // 命令字
+			} else {
+				//2003
+				JT_8700 cmdData = new JT_8700();
+				ts.setMessageContents(cmdData);
+				String[] fields = tc.getCmdData().split("[;]", -1);
+				cmdData.setCommandWord(Byte.parseByte(fields[0])); // 命令字
+				// cmdDat = uShort.parseShort(fields[1]);
+				cmdData.setRepassPacketsCount((byte) 0); // 不需要重传包
 			}
 		} else if (tc.getCmdType() == JT808Constants.CMD_VEHICLE_RECORDER_CONFIG) {
 			// 行车记录参数下传命令
@@ -794,8 +801,8 @@ public class CommandService implements ICommandService {
 			} else if (cmdWord == 0xC2) {
 				// 记录仪的实时时钟 YY-MM-DD-hh-mm-ss
 				Recorder_RealTimeClock rd = new Recorder_RealTimeClock();
-				rd.setRealTimeClock(new java.util.Date(java.util.Date
-						.parse(fields[1])));
+				SimpleDateFormat sdf = new SimpleDateFormat("yy-MM-dd HH:mm:ss");
+				rd.setRealTimeClock(sdf.parse(fields[1]));
 				cmdData.setData(rd);
 			} else if (cmdWord == 0xC3) {
 				// 设定的车辆特征系数 (高中低字节)，对应车辆车速传感器系数设置

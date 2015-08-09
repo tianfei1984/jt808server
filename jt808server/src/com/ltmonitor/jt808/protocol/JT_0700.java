@@ -51,13 +51,13 @@ public class JT_0700 implements IMessageBody
 
 	public final void ReadFromBytes(byte[] bytes)
 	{
-		short t = (short)BitConverter.ToUInt16(bytes, 10);
+		short t = (short)BitConverter.ToUInt16(bytes, 0);
 		//setResponseMessageSerialNo((short)((bytes[0] << 8) + bytes[1]));
 		this.responseMessageSerialNo = t;
 		this.commandWord = (bytes[2]);
-		this.cmdData = new byte[bytes.length - 3];
+		this.cmdData = new byte[bytes.length];
 		//将命令字的数据填充到缓冲中，便于转发
-		System.arraycopy(bytes, 3, cmdData, 0, cmdData.length); 
+		System.arraycopy(bytes, 0, cmdData, 0, cmdData.length); 
 		
 		byte h1 = bytes[3];
 		byte h2= bytes[4];

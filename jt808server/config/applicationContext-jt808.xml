@@ -9,6 +9,7 @@
 		<property name="enableSaveDb">
 			<value>${enableSaveDb}</value>
 		</property>
+		<property name="vehicleRecorderService" ref="vehicleRecorderService"></property>
 	</bean>
 	
 	<!-- 终端上行数据处理接口 -->
@@ -31,6 +32,12 @@
 	<!-- 多媒体服务 -->
 	<bean id="mediaService" class="com.ltmonitor.jt808.service.impl.MediaService">
 		<property name="uploadDir" value="${imagePath}"></property>
+		<property name="mediaUploadTimeOut" value="${mediaUploadTimeOut}"></property>
+		<property name="maxRetransTimes" value="${maxRetransTimes}"></property>
+	</bean>
+	
+	<!-- 行车记录仪服务 -->
+	<bean id="vehicleRecorderService" class="com.ltmonitor.jt808.service.impl.VehicleRecorderService">
 		<property name="mediaUploadTimeOut" value="${mediaUploadTimeOut}"></property>
 		<property name="maxRetransTimes" value="${maxRetransTimes}"></property>
 	</bean>

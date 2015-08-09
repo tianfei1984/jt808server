@@ -510,7 +510,7 @@ public class RealDataService implements IRealDataService {
 		if(rd != null){
 			rd.setOnline(onlineStatue);
 			rd.setOnlineDate(new Date());
-//			rd.setSendTime(new Date());
+			rd.setSendTime(new Date());
 			//更新车辆实时信息
 			saveRealData(rd);
 			onlineRecordService.checkOnline(rd);

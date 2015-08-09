@@ -3,7 +3,7 @@ package com.ltmonitor.jt808.protocol.jt2012;
 import com.ltmonitor.jt808.protocol.IMessageBody;
 
 /** 
- 行驶记录数据上传(0x0710)  (仅适用于GB/T1905-2012)
+ 行驶记录数据上传(0x0700)  (仅适用于GB/T1905-2012)
  
 */
 public class JT2012_0700 implements IMessageBody
