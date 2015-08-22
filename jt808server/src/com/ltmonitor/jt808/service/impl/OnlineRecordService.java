@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.apache.log4j.Logger;
 
 import com.ltmonitor.dao.IBaseDao;
+import com.ltmonitor.entity.Alarm;
 import com.ltmonitor.entity.AlarmRecord;
 import com.ltmonitor.entity.GPSRealData;
 import com.ltmonitor.entity.OnlineRecord;
@@ -131,9 +132,25 @@ public class OnlineRecordService implements IOnlineRecordService {
 		r.setVelocity(rd.getVelocity());
 		String alarmType = rd.getOnline() ? OnlineRecord.TYPE_ONLINE : OnlineRecord.TYPE_OFFLINE;
 		r.setChildType(alarmType);
-		//终端上线、下张告警
+		//终端上线、下线报警
 		if (alarmService.isAlarmEnabled(alarmType,AlarmRecord.ALARM_FROM_PLATFORM)) {
 			this.newAlarmService.insertAlarm(AlarmRecord.ALARM_FROM_PLATFORM,alarmType, rd);
+			String hsql = "from AlarmRecord where vehicleId = ? and childType = ? and status = ?";
+			AlarmRecord ar = (AlarmRecord) getBaseDao().find(hsql,new Object[]{rd.getVehicleId(),
+					rd.getOnline() ? OnlineRecord.TYPE_OFFLINE : OnlineRecord.TYPE_ONLINE,
+					OnlineRecord.STATUS_NEW});
+			if(ar != null){
+				//增加离线报警
+				ar.setStatus(AlarmRecord.STATUS_OLD);
+				ar.setEndTime(rd.getSendTime());
+				ar.setLatitude1(rd.getLatitude());
+				ar.setLongitude1(rd.getLongitude());
+				double minutes = 0.1 * DateUtil.getSeconds(ar.getStartTime(),ar.getEndTime()) / 6;
+				ar.setTimeSpan(minutes);// 计算出报警时长
+				getBaseDao().saveOrUpdate(ar);
+			} 
+			ar = new AlarmRecord(rd, alarmType, OnlineRecord.ALARM_FROM_PLATFORM);
+			getBaseDao().saveOrUpdate(ar);
 		}
 
 		if (dataQueue.size() > 2000) {

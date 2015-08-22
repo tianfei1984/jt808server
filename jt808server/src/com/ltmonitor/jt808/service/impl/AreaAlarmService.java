@@ -119,12 +119,10 @@ public class AreaAlarmService implements IAreaAlarmService {
 				GPSRealData oldRd = realDataMap.get(simNo);
 				if(oldRd!=null)
 				{
-					if(oldRd.getLatitude() == rd.getLatitude() && oldRd.getLongitude() == rd.getLongitude())
-					{
+					if(oldRd.getLatitude() == rd.getLatitude() && oldRd.getLongitude() == rd.getLongitude()) {
 						continue;//如果坐标没变化，没必要分析区域
 					}
-				}else
-				{
+				}else {
 					oldRd = new GPSRealData();
 				}
 
@@ -510,6 +508,7 @@ public class AreaAlarmService implements IAreaAlarmService {
 			AnalyzeOffsetRoute(rd, ec, mp);
 		} else {
 			if (ec.getKeyPoint() == 1) {
+				//路线关键点报警
 				if (ec.getByTime())
 					monitorKeyPointArrvie(rd, ec, mp);// 监控在规定的时间段内到达
 				else

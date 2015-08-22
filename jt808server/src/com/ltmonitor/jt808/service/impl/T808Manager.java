@@ -101,6 +101,7 @@ public class T808Manager implements IT808Manager {
 		// msg.setPacketDescr(strMsg);
 		boolean res = send(msg.getSimNo(), msg.WriteToBytes());
 		GlobalConfig.putMsg(msg);
+		logger.info("DOWN >> "+ msg.getSimNo() + " ÏûÏ¢Id:"+ msg.getMessageType() + "  " + msg.getPacketDescr());
 		return res;
 	}
 	
@@ -139,12 +140,10 @@ public class T808Manager implements IT808Manager {
 		    	 */
 				@Override
 				public boolean OnRecvCommand(T808Message tm, TerminalCommand tc) {
-					if(getJt808Server().isOnline(tc.getSimNo()) == false)
-					{
+					if(getJt808Server().isOnline(tc.getSimNo()) == false){
 						tc.setStatus(TerminalCommand.STATUS_OFFLINE);
 						return false;
-					}else
-					{
+					} else {
 						boolean res = Send(tm);
 						tc.setSN(tm.getHeader().getMessageSerialNo());
 						tc.setStatus(res ? TerminalCommand.STATUS_PROCESSING : 

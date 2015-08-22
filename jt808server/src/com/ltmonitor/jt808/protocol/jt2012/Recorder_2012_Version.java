@@ -3,14 +3,13 @@ package com.ltmonitor.jt808.protocol.jt2012;
 import com.ltmonitor.entity.StringUtil;
 
 /** 
- 采集执行标准版本
+ 采集执行标准版本 0x00H
  
 */
 public class Recorder_2012_Version implements IRecorderDataBlock_2012
 {
 	/** 
 	 命令字
-	 
 	*/
 	public final byte getCommandWord()
 	{
@@ -19,10 +18,7 @@ public class Recorder_2012_Version implements IRecorderDataBlock_2012
 
 	/** 
 	 数据块长度
-	 
 	*/
-//C# TO JAVA CONVERTER WARNING: Unsigned integer types have no direct equivalent in Java:
-//ORIGINAL LINE: public ushort getDataLength()
 	public final short getDataLength()
 	{
 		return 2;
@@ -35,7 +31,6 @@ public class Recorder_2012_Version implements IRecorderDataBlock_2012
 	}
 	/** 
 	 修改单号 （默认为 00H）
-	 
 	*/
 	private String privateModifiedOrder;
 	public final String getModifiedOrder()
@@ -49,7 +44,6 @@ public class Recorder_2012_Version implements IRecorderDataBlock_2012
 
 	/** 
 	 版本号 （默认为 03）
-	 
 	*/
 	private String privateRecardVersion;
 	public final String getRecardVersion()
@@ -64,7 +58,6 @@ public class Recorder_2012_Version implements IRecorderDataBlock_2012
 
 	/** 
 	 上行命令
-	 
 	 @param bytes
 	*/
 	public final void ReadFromBytes(byte[] bytes)
@@ -83,6 +76,11 @@ public class Recorder_2012_Version implements IRecorderDataBlock_2012
 		String n = Integer.toHexString(nub);
 		setRecardVersion("20" + y);
 		setModifiedOrder(n);
+	}
+
+	@Override
+	public String toString() {
+		return getRecardVersion()+","+getModifiedOrder();
 	}
 }
 

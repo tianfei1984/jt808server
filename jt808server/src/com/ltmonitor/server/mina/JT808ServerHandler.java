@@ -101,6 +101,8 @@ public class JT808ServerHandler extends IoHandlerAdapter {
 					&& tm.getHeader().getMessageType() == 0x0200) {
 				conn.setPositionPackageNum(conn.getPositionPackageNum() + 1);
 			}
+			//上行数据
+			logger.info("UP >> " + tm.getSimNo() + " 消息ID:"+ tm.getMessageType() + "  "+ tm.getPacketDescr());
 		}
 
 	}

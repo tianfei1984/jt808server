@@ -1,69 +1,34 @@
 package com.ltmonitor.jt808.protocol.jt2012;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+import com.ltmonitor.entity.VehicleRecorder;
+import com.ltmonitor.jt808.entity.SpeedRecorder;
 import com.ltmonitor.jt808.protocol.BitConverter;
 import com.ltmonitor.jt808.tool.DateUtil;
 
 /** 
- 采集指定的位置信息记录
+ 采集指定的位置信息记录 0x09H
  
 */
-public class Recorder_LocationInformation implements IRecorderDataBlock_2012
-{
-	//一小时的数据
-	private java.util.HashMap<Integer, String> privateOneHourPlaceInfo;
-	public final java.util.HashMap<Integer, String> getOneHourPlaceInfo()
-	{
-		return privateOneHourPlaceInfo;
-	}
-	public final void setOneHourPlaceInfo(java.util.HashMap<Integer, String> value)
-	{
-		privateOneHourPlaceInfo = value;
-	}
-	private java.util.HashMap<Integer, String> privateOneSpeedPlaceInfo;
-	public final java.util.HashMap<Integer, String> getOneSpeedPlaceInfo()
-	{
-		return privateOneSpeedPlaceInfo;
-	}
-	public final void setOneSpeedPlaceInfo(java.util.HashMap<Integer, String> value)
-	{
-		privateOneSpeedPlaceInfo = value;
-	}
-	//每一小时的时候据
-	private static java.util.HashMap<java.util.Date, java.util.HashMap<Integer, String>> privateHoursPlaceInfo;
-	public static java.util.HashMap<java.util.Date, java.util.HashMap<Integer, String>> getHoursPlaceInfo()
-	{
-		return privateHoursPlaceInfo;
-	}
-	public static void setHoursPlaceInfo(java.util.HashMap<java.util.Date, java.util.HashMap<Integer, String>> value)
-	{
-		privateHoursPlaceInfo = value;
-	}
-	private static java.util.HashMap<java.util.Date, java.util.HashMap<Integer, String>> privateHoursPeedInfo;
-	public static java.util.HashMap<java.util.Date, java.util.HashMap<Integer, String>> getHoursPeedInfo()
-	{
-		return privateHoursPeedInfo;
-	}
-	public static void setHoursPeedInfo(java.util.HashMap<java.util.Date, java.util.HashMap<Integer, String>> value)
-	{
-		privateHoursPeedInfo = value;
-	}
-
+public class Recorder_LocationInformation implements IRecorderDataBlock_2012 {
+	
+	private List<VehicleRecorder> vehicleRecorders = new ArrayList<VehicleRecorder>();
 
 	/** 
 	 命令字
-	 
 	*/
 	public final byte getCommandWord()
 	{
-		return 0x06;
+		return 0x09;
 	}
 
 	/** 
 	 数据块长度
-	 
 	*/
-//C# TO JAVA CONVERTER WARNING: Unsigned integer types have no direct equivalent in Java:
-//ORIGINAL LINE: public ushort getDataLength()
 	public final short getDataLength()
 	{
 		return 87;
@@ -225,41 +190,39 @@ public class Recorder_LocationInformation implements IRecorderDataBlock_2012
 		return date;
 	}
 
-
-
 	public final void ReadFromBytes(byte[] bytes)
 	{
-		getHoursPeedInfo().clear();
-		getHoursPlaceInfo().clear();
-		StringBuilder sb = new StringBuilder();
-		if (bytes != null)
-		{
-			for (int i = 0; i < bytes.length / 666; i++)
-			{
+		if (bytes != null) {
+			for (int i = 0; i < bytes.length / 666; i++){
+				VehicleRecorder vr = new VehicleRecorder();
 				byte[] OneHourDate = new byte[666];
 				System.arraycopy(bytes, 0 + 666 * i, OneHourDate, 0, 666);
-
+				//开始时间
 				byte[] beginTime = new byte[6];
 				System.arraycopy(OneHourDate, 0, beginTime, 0, 6);
-				java.util.Date time = new java.util.Date(java.util.Date.parse("20" + String.format("%02X", beginTime[0]) + "-" + String.format("%02X", beginTime[1]) + "-" + String.format("%02X", beginTime[2]) + " " + String.format("%02X", beginTime[3]) + ":" + String.format("%02X", beginTime[4]) + ":" + String.format("%02X", beginTime[5])));
-
-				for (int j = 0; j < 60; j++)
-				{
+				Date time = new Date(java.util.Date.parse("20" + String.format("%02X", beginTime[0]) + "-" + String.format("%02X", beginTime[1]) + "-" + String.format("%02X", beginTime[2]) + " " + String.format("%02X", beginTime[3]) + ":" + String.format("%02X", beginTime[4]) + ":" + String.format("%02X", beginTime[5])));
+				vr.setStartTime(time);		
+				SpeedRecorder sr = null;
+				for (int j = 0; j < 60; j++) {
+					sr = new SpeedRecorder();
+					//位置信息
 					byte[] placeInfo = new byte[10];
 					System.arraycopy(OneHourDate, 6 + 11 * j, placeInfo, 0, 10);
-					String PlaceInfo = GetPlaceInfo(placeInfo);
-
+					int longitude = BitConverter.ToUInt32(placeInfo, 0);
+					int latitude = BitConverter.ToUInt32(placeInfo, 4);
+					int altitude = BitConverter.ToUInt16(placeInfo, 8);
+					sr.setAltitude(altitude);
+					sr.setLatitude(latitude);
+					sr.setLongitude(longitude);
+					//速度
 					byte minspeed = OneHourDate[16 + 11 * j];
 					int speed = BitConverter.ToUInt32(minspeed);
-
-					getOneHourPlaceInfo().put(j, PlaceInfo);
-					getOneSpeedPlaceInfo().put(j, (new Integer(speed)).toString());
-
+					sr.setSpeed(speed);
+					Date takeTime = DateUtil.getDate(time, Calendar.MINUTE, 1);
+					sr.setRecorderDate(takeTime);
+					vr.getSpeedList().add(sr);
 				}
-				getHoursPlaceInfo().put(time, getOneHourPlaceInfo());
-				getHoursPeedInfo().put(time, getOneSpeedPlaceInfo());
-				setOneHourPlaceInfo(new java.util.HashMap<Integer, String>());
-				setOneSpeedPlaceInfo(new java.util.HashMap<Integer, String>());
+				vehicleRecorders.add(vr);
 			}
 		}
 	}
@@ -282,5 +245,35 @@ public class Recorder_LocationInformation implements IRecorderDataBlock_2012
 		return sb.toString();
 	}
 
+	public List<VehicleRecorder> getVehicleRecorders() {
+		return vehicleRecorders;
+	}
 
+	public void setVehicleRecorders(List<VehicleRecorder> vehicleRecorders) {
+		this.vehicleRecorders = vehicleRecorders;
+	}
+
+	public java.util.Date getPrivateBenginTime() {
+		return privateBenginTime;
+	}
+
+	public void setPrivateBenginTime(java.util.Date privateBenginTime) {
+		this.privateBenginTime = privateBenginTime;
+	}
+
+	public java.util.Date getPrivateEndTime() {
+		return privateEndTime;
+	}
+
+	public void setPrivateEndTime(java.util.Date privateEndTime) {
+		this.privateEndTime = privateEndTime;
+	}
+
+	public int getPrivateMaxNumber() {
+		return privateMaxNumber;
+	}
+
+	public void setPrivateMaxNumber(int privateMaxNumber) {
+		this.privateMaxNumber = privateMaxNumber;
+	}
 }

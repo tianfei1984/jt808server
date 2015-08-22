@@ -4,14 +4,13 @@ import com.ltmonitor.jt808.protocol.BitConverter;
 
 
 /** 
- 采集驾驶人信息
+ 采集驾驶人信息 01H
  
 */
 public class Recorder_DriverInformation implements IRecorderDataBlock_2012
 {
 	/** 
 	 命令字
-	 
 	*/
 	public final byte getCommandWord()
 	{
@@ -20,10 +19,7 @@ public class Recorder_DriverInformation implements IRecorderDataBlock_2012
 
 	/** 
 	 数据块长度
-	 
 	*/
-//C# TO JAVA CONVERTER WARNING: Unsigned integer types have no direct equivalent in Java:
-//ORIGINAL LINE: public ushort getDataLength()
 	public final short getDataLength()
 	{
 		return 18;
@@ -37,7 +33,6 @@ public class Recorder_DriverInformation implements IRecorderDataBlock_2012
 
 	/** 
 	 机动车驾驶证号码 （未知为 00H）
-	 
 	*/
 	private String privateDriverLicenseNo;
 	public final String getDriverLicenseNo()
@@ -59,6 +54,11 @@ public class Recorder_DriverInformation implements IRecorderDataBlock_2012
 			String add = "00H";
 			setDriverLicenseNo(getDriverLicenseNo() + add);
 		}
+	}
+
+	@Override
+	public String toString() {
+		return getDriverLicenseNo();
 	}
 }
 

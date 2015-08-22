@@ -1068,135 +1068,96 @@ public class GpsDataService implements IGpsDataService {
 				this.transferGpsService.transferRecorderData(vd.getPlateNo(),
 						vd.getPlateColor(), rd.getCommandWord(),rd.getCmdData());
 			}
-
 		}
 		List<VehicleRecorder> result = new ArrayList<VehicleRecorder>();
 		byte cmdWord = recorderData.getCommandWord();
 		logger.info(cmdWord + ',' + recorderData.toString());
-		if (cmdWord == 0x05) {
-			Recorder_SpeedIn360Hours dv = (Recorder_SpeedIn360Hours) recorderData;
-			for (Date key : dv.getSpeedsIn360Hours().keySet()) {
-				byte[] values = dv.getSpeedsIn360Hours().get(key);
-				StringBuilder sb = new StringBuilder();
+		if(vehicleRecorderVersion == null || vehicleRecorderVersion.isEmpty()){
+			//2003
+			if (cmdWord == 0x05) {
+				Recorder_SpeedIn360Hours dv = (Recorder_SpeedIn360Hours) recorderData;
+				for (Date key : dv.getSpeedsIn360Hours().keySet()) {
+					byte[] values = dv.getSpeedsIn360Hours().get(key);
+					StringBuilder sb = new StringBuilder();
+					int m = 0;
+					for (byte b : values) {
+						VehicleRecorder vr1 = new VehicleRecorder();
+						vr1.setCmd(cmdWord);
+						vr1.setCommandId(commandId);
+						vr1.setStartTime(key);
+						vr1.setSpeed(b);
+						vr1.setSortId(m++);
+						vr1.setVehicleId(vd.getEntityId());
+						result.add(vr1);
+					}
+				}
+				
+			} else if (cmdWord == 0x07) {
+				Recorder_DoubtfulPointData dv = (Recorder_DoubtfulPointData) recorderData;
+				for (Date key : dv.getDoubtfulPointData().keySet()) {
+					ArrayList<Byte[]> values = dv.getDoubtfulPointData().get(key);
+					StringBuilder sb = new StringBuilder();
+					int m = 0;
+					for (Byte[] b : values) {
+						VehicleRecorder vr1 = new VehicleRecorder();
+						vr1.setCmd(cmdWord);
+						vr1.setCommandId(commandId);
+						vr1.setStartTime(key);
+						vr1.setSpeed(b[0]);
+						vr1.setSignal(b[1]);
+						vr1.setSortId(m++);
+						vr1.setVehicleId(vd.getEntityId());
+						result.add(vr1);
+					}
+				}
+				
+			} else if (cmdWord == 0x09) {
+				// 最近两天内的数据
+				Recorder_SpeedIn2Days dv = (Recorder_SpeedIn2Days) recorderData;
+				for (Date key : dv.getSpeedsIn2Days().keySet()) {
+					byte[] values = dv.getSpeedsIn2Days().get(key);
+					StringBuilder sb = new StringBuilder();
+					int m = 0;
+					for (byte b : values) {
+						VehicleRecorder vr1 = new VehicleRecorder();
+						vr1.setCmd(cmdWord);
+						vr1.setCommandId(commandId);
+						vr1.setStartTime(key);
+						vr1.setSpeed(b);
+						vr1.setSortId(m++);
+						vr1.setVehicleId(vd.getEntityId());
+						result.add(vr1);
+					}
+				}
+				
+			} else if (cmdWord == 0x11) {
+				// 疲劳驾驶
+				Recorder_TiredDrivingRecord dv = (Recorder_TiredDrivingRecord) recorderData;
 				int m = 0;
-				for (byte b : values) {
+				for (TiredDrivingRecordItem ti : dv.getRecords()) {
 					VehicleRecorder vr1 = new VehicleRecorder();
 					vr1.setCmd(cmdWord);
 					vr1.setCommandId(commandId);
-					vr1.setStartTime(key);
-					vr1.setSpeed(b);
+					vr1.setStartTime(ti.getStartTime());
+					vr1.setEndTime(ti.getEndTime());
+					// vr1.setCmdData(ti.getDriverLincenseNo())；
 					vr1.setSortId(m++);
 					vr1.setVehicleId(vd.getEntityId());
 					result.add(vr1);
 				}
-			}
-
-		} else if (cmdWord == 0x07) {
-			Recorder_DoubtfulPointData dv = (Recorder_DoubtfulPointData) recorderData;
-			for (Date key : dv.getDoubtfulPointData().keySet()) {
-				ArrayList<Byte[]> values = dv.getDoubtfulPointData().get(key);
-				StringBuilder sb = new StringBuilder();
-				int m = 0;
-				for (Byte[] b : values) {
-					VehicleRecorder vr1 = new VehicleRecorder();
-					vr1.setCmd(cmdWord);
-					vr1.setCommandId(commandId);
-					vr1.setStartTime(key);
-					vr1.setSpeed(b[0]);
-					vr1.setSignal(b[1]);
-					vr1.setSortId(m++);
-					vr1.setVehicleId(vd.getEntityId());
-					result.add(vr1);
-				}
-			}
-
-		} else if (cmdWord == 0x09) {
-			// 最近两天内的数据
-			Recorder_SpeedIn2Days dv = (Recorder_SpeedIn2Days) recorderData;
-			for (Date key : dv.getSpeedsIn2Days().keySet()) {
-				byte[] values = dv.getSpeedsIn2Days().get(key);
-				StringBuilder sb = new StringBuilder();
-				int m = 0;
-				for (byte b : values) {
-					VehicleRecorder vr1 = new VehicleRecorder();
-					vr1.setCmd(cmdWord);
-					vr1.setCommandId(commandId);
-					vr1.setStartTime(key);
-					vr1.setSpeed(b);
-					vr1.setSortId(m++);
-					vr1.setVehicleId(vd.getEntityId());
-					result.add(vr1);
-				}
-			}
-
-		} else if (cmdWord == 0x11) {
-			// 疲劳驾驶
-			Recorder_TiredDrivingRecord dv = (Recorder_TiredDrivingRecord) recorderData;
-			int m = 0;
-			for (TiredDrivingRecordItem ti : dv.getRecords()) {
+			} else {
 				VehicleRecorder vr1 = new VehicleRecorder();
 				vr1.setCmd(cmdWord);
 				vr1.setCommandId(commandId);
-				vr1.setStartTime(ti.getStartTime());
-				vr1.setEndTime(ti.getEndTime());
-				// vr1.setCmdData(ti.getDriverLincenseNo())；
-				vr1.setSortId(m++);
 				vr1.setVehicleId(vd.getEntityId());
+				vr1.setCmdData(recorderData.toString());
 				result.add(vr1);
 			}
-		} else {
-			VehicleRecorder vr1 = new VehicleRecorder();
-			vr1.setCmd(cmdWord);
-			vr1.setCommandId(commandId);
-			vr1.setVehicleId(vd.getEntityId());
-			vr1.setCmdData(recorderData.toString());
-			result.add(vr1);
+		} else if("2012".equals(vehicleRecorderVersion)){
+			//2012
 		}
 
 		this.baseDao.saveOrUpdateAll(result);
-		// if (cmdWord == 0x01)
-		// {
-		// Recorder_DriverVehicleCode dv =
-		// (Recorder_DriverVehicleCode)recorderData;
-		// vr.DriverCode = dv.DriverCode;
-		// vr.DriverLicense = dv.DriverLicenseNo;
-		// }
-		// else if (cmdWord == 0x02)
-		// {
-		// Recorder_RealTimeClock dv = (Recorder_RealTimeClock)recorderData;
-		// vr.DeviceClock = dv.RealTimeClock;
-		// }
-		// else if (cmdWord == 0x03)
-		// {
-		// Recorder_MileageIn360Hours dv =
-		// (Recorder_MileageIn360Hours)recorderData;
-		// vr.MileageIn360h = dv.Mileage;
-		// }
-		// else if (cmdWord == 0x04)
-		// {
-		// Recorder_FeatureFactor dv = (Recorder_FeatureFactor)recorderData;
-		//
-		// }
-		// else if (cmdWord == 0x05)
-		// {
-		// Recorder_SpeedIn360Hours dv = (Recorder_SpeedIn360Hours)recorderData;
-		// //
-		// }
-		//
-		// else if (cmdWord == 0x07)
-		// {
-		// Recorder_DoubtfulPointData dv =
-		// (Recorder_DoubtfulPointData)recorderData;
-		// //
-		// }
-		// else if (cmdWord == 0x08)
-		// {
-		// Recorder_VehicleLicenseInfo dv =
-		// (Recorder_VehicleLicenseInfo)recorderData;
-		// //
-		// }
-		//
-		//
 	}
 
 	// *
@@ -1521,6 +1482,12 @@ public class GpsDataService implements IGpsDataService {
 			IVehicleRecorderService vehicleRecorderService) {
 		this.vehicleRecorderService = vehicleRecorderService;
 	}
-	
 
+	public String getVehicleRecorderVersion() {
+		return vehicleRecorderVersion;
+	}
+
+	public void setVehicleRecorderVersion(String vehicleRecorderVersion) {
+		this.vehicleRecorderVersion = vehicleRecorderVersion;
+	}
 }

@@ -1,10 +1,11 @@
 package com.ltmonitor.jt808.protocol.jt2012;
 
 import com.ltmonitor.jt808.protocol.BitConverter;
+import com.ltmonitor.jt808.tool.DateUtil;
 
 
 /** 
- 采集状态信号配置信息
+ 采集状态信号配置信息 0x6H
  
 */
 public class Recorder_StateInformation implements IRecorderDataBlock_2012
@@ -22,8 +23,6 @@ public class Recorder_StateInformation implements IRecorderDataBlock_2012
 	 数据块长度
 	 
 	*/
-//C# TO JAVA CONVERTER WARNING: Unsigned integer types have no direct equivalent in Java:
-//ORIGINAL LINE: public ushort getDataLength()
 	public final short getDataLength()
 	{
 		return 87;
@@ -297,9 +296,7 @@ public class Recorder_StateInformation implements IRecorderDataBlock_2012
 		if ((bytes[6] & 0x80) == 0x80)
 		{
 			setD7State("1");
-		}
-		else
-		{
+		}else {
 			setD7State("0");
 		}
 		if ((bytes[6] & 0x40) == 0x40)
@@ -402,6 +399,17 @@ public class Recorder_StateInformation implements IRecorderDataBlock_2012
 		}
 		bytesState = BitConverter.getBytes(StateName);
 		return bytesState;
+	}
+
+	@Override
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append(DateUtil.datetimeToString(getRealTime())).append(",").
+		append(getD7State()).append(getD6State()).append(getD5State()).append(getD4State()).append(getD3State()).append(getD2State()).append(getD1State()).append(getD0State()).
+		append(",").append(getD7Name()).append(getD6Name()).append(getD5Name()).append(getD4Name()).append(getD3Name()).append(getD2Name()).append(getD1Name())
+		.append(getD0Name());
+		
+		return sb.toString();
 	}
 }
 

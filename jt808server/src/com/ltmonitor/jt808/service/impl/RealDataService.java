@@ -233,7 +233,7 @@ public class RealDataService implements IRealDataService {
 					batchUpdate(result);
 					Date end = new Date();
 					double seconds = DateUtil.getSeconds(start, end);
-					logger.error("实时数据更新耗时:" + seconds + ",条数：" + result.size());
+					logger.debug("实时数据更新耗时:" + seconds + ",条数：" + result.size());
 
 				}
 				// logger.error("实时更新线程正在运行");

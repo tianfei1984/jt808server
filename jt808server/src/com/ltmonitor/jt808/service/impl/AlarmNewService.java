@@ -268,19 +268,16 @@ public class AlarmNewService implements IAlarmService {
 			int alarmId = 31 - m; // 倒序，转换为部标的报警序号
 			String alarmType = "" + alarmId;
 			// 转发报警信息
-			if (alarmSource.equals(AlarmRecord.ALARM_FROM_TERM)
-					&& alarmState.equals(AlarmRecord.TURN_ON)
+			if (alarmState.equals(AlarmRecord.TURN_ON)
 					&& this.isAlarmEnabled(alarmType, alarmSource)) {
 
 				// 转发809报警
-				if (this.transferGpsService.isTransferTo809Enabled()) {
+				if (alarmSource.equals(AlarmRecord.ALARM_FROM_TERM)
+						&& this.transferGpsService.isTransferTo809Enabled()) {
 					transferAlarm(alarmSource, alarmType, rd);
 				}
-
-				// if (alarmId == 0) {
 				// 插入新的紧急报警
 				newAlarmService.insertAlarm(alarmSource, alarmType, rd);
-				// }
 			}
 			if (alarmSource.equals(AlarmRecord.ALARM_FROM_TERM)) {
 				if (alarmId == 20) {

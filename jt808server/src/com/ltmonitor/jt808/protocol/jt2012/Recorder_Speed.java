@@ -1,59 +1,22 @@
 package com.ltmonitor.jt808.protocol.jt2012;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
+import com.ltmonitor.entity.VehicleRecorder;
+import com.ltmonitor.jt808.entity.SpeedRecorder;
 import com.ltmonitor.jt808.protocol.BitConverter;
 import com.ltmonitor.jt808.tool.DateUtil;
 
 /** 
- 采集指定的行驶速度记录
+ 采集指定的行驶速度记录 0x08H
  
 */
-public class Recorder_Speed implements IRecorderDataBlock_2012
-{
-	//一分钟的数据
-	private java.util.HashMap<Integer, String> privateOneMinuteSpeedInfo;
-	public final java.util.HashMap<Integer, String> getOneMinuteSpeedInfo()
-	{
-		return privateOneMinuteSpeedInfo;
-	}
-	public final void setOneMinuteSpeedInfo(java.util.HashMap<Integer, String> value)
-	{
-		privateOneMinuteSpeedInfo = value;
-	}
-
-	//一分钟内的状体信号信息
-	private java.util.HashMap<Integer, String> privateOneMinuteStateInfo;
-	public final java.util.HashMap<Integer, String> getOneMinuteStateInfo()
-	{
-		return privateOneMinuteStateInfo;
-	}
-	public final void setOneMinuteStateInfo(java.util.HashMap<Integer, String> value)
-	{
-		privateOneMinuteStateInfo = value;
-	}
-
-	//每一分钟的数据
-	private java.util.HashMap<java.util.Date, java.util.HashMap<Integer, String>> privateMinuteSpeedInfo;
-	public final java.util.HashMap<java.util.Date, java.util.HashMap<Integer, String>> getMinuteSpeedInfo()
-	{
-		return privateMinuteSpeedInfo;
-	}
-	public final void setMinuteSpeedInfo(java.util.HashMap<java.util.Date, java.util.HashMap<Integer, String>> value)
-	{
-		privateMinuteSpeedInfo = value;
-	}
-
-	//每分钟的状态数据
-	private java.util.HashMap<java.util.Date, java.util.HashMap<Integer, String>> privateMinuteSpeedState;
-	public final java.util.HashMap<java.util.Date, java.util.HashMap<Integer, String>> getMinuteSpeedState()
-	{
-		return privateMinuteSpeedState;
-	}
-	public final void setMinuteSpeedState(java.util.HashMap<java.util.Date, java.util.HashMap<Integer, String>> value)
-	{
-		privateMinuteSpeedState = value;
-	}
+public class Recorder_Speed implements IRecorderDataBlock_2012 {
+	
+	List<VehicleRecorder> vehicleRecorders = new ArrayList<VehicleRecorder>();
 
 	/** 
 	 命令字
@@ -243,31 +206,29 @@ public class Recorder_Speed implements IRecorderDataBlock_2012
 
 	public final void ReadFromBytes(byte[] bytes)
 	{
-		setOneMinuteSpeedInfo(new java.util.HashMap<Integer, String>());
-		setOneMinuteStateInfo(new java.util.HashMap<Integer, String>());
-		setMinuteSpeedState(new java.util.HashMap<java.util.Date, java.util.HashMap<Integer, String>>());
-		setMinuteSpeedInfo(new java.util.HashMap<java.util.Date, java.util.HashMap<Integer, String>>());
-		StringBuilder sb = new StringBuilder();
 		if (bytes != null)
 		{
 			//获取数据包上传多少分钟的数据
-			for (int i = 0; i < bytes.length / 126; i++)
-			{
+			for (int i = 0; i < bytes.length / 126; i++) {
+				VehicleRecorder vr = new VehicleRecorder();
 				int add = 126 * i;
 				byte[] minutedate = new byte[126];
 				System.arraycopy(bytes, 0 + add, minutedate, 0, 126);
-				java.util.Date dt = new java.util.Date();
+				byte[] time = new byte[6];
+				System.arraycopy(minutedate, 0, time, 0, 6);
+				Date dt = new Date(java.util.Date.parse("20" + String.format("%02X", time[0]) + "-" + String.format("%02X", time[1]) + "-" + String.format("%02X", time[2]) + " " + String.format("%02X", time[3]) + ":" + String.format("%02X", time[4]) + ":" + String.format("%02X", time[5])));
+				vr.setStartTime(dt);
+				SpeedRecorder sr = null;
 				//获取一分钟内每一秒的速度以及状态信息
-				for (int j = 0; j < 60; j++)
-				{
-					byte[] time = new byte[6];
-					System.arraycopy(minutedate, 0, time, 0, 6);
-					new java.util.Date(java.util.Date.parse("20" + String.format("%02X", time[0]) + "-" + String.format("%02X", time[1]) + "-" + String.format("%02X", time[2]) + " " + String.format("%02X", time[3]) + ":" + String.format("%02X", time[4]) + ":" + String.format("%02X", time[5])));
-
-					//String SpeedInfo = Integer.parseInt(minutedate[6 + j * 2]).toString();
-					String SpeedInfo = ""+BitConverter.ToUInt32(minutedate[6 + j * 2]);
+				for (int j = 0; j < 60; j++){
+					sr = new SpeedRecorder();
+					//速度
+					int speed = BitConverter.ToUInt32(minutedate[6 + j * 2]);
+					sr.setSpeed(speed);
+					//信号
+					int signalState = BitConverter.ToUInt32(minutedate[7 + 2 * j]);
+					sr.setSignalState(signalState);
 					String State="";
-
 					if ((minutedate[7 + j * 2] & 0x80) == 0x80)
 					{
 						State = "1";
@@ -332,23 +293,45 @@ public class Recorder_Speed implements IRecorderDataBlock_2012
 					{
 						State += "0";
 					}
-					
-
-					Calendar calendar = Calendar.getInstance();
-					calendar.setTime(dt);
-
-					getOneMinuteSpeedInfo().put(calendar.get(Calendar.SECOND) + j, SpeedInfo);
-					getOneMinuteStateInfo().put(calendar.get(Calendar.SECOND) + j, State);
-					State = "";
-					SpeedInfo = "";
+					Date takeTime = DateUtil.getDate(dt, Calendar.SECOND, 1);
+					sr.setRecorderDate(takeTime);
+					vr.getSpeedList().add(sr);
 				}
-
 				//将每一分钟的数据分别放入新的集合
-				getMinuteSpeedInfo().put(dt, getOneMinuteSpeedInfo());
-				getMinuteSpeedState().put(dt, getOneMinuteStateInfo());
-
+				vehicleRecorders.add(vr);
 			}
 		}
 	}
-
+	public List<VehicleRecorder> getVehicleRecorders() {
+		return vehicleRecorders;
+	}
+	public void setVehicleRecorders(List<VehicleRecorder> vehicleRecorders) {
+		this.vehicleRecorders = vehicleRecorders;
+	}
+	public short getPrivateDataLength() {
+		return privateDataLength;
+	}
+	public void setPrivateDataLength(short privateDataLength) {
+		this.privateDataLength = privateDataLength;
+	}
+	public java.util.Date getPrivateBenginTime() {
+		return privateBenginTime;
+	}
+	public void setPrivateBenginTime(java.util.Date privateBenginTime) {
+		this.privateBenginTime = privateBenginTime;
+	}
+	public java.util.Date getPrivateEndTime() {
+		return privateEndTime;
+	}
+	public void setPrivateEndTime(java.util.Date privateEndTime) {
+		this.privateEndTime = privateEndTime;
+	}
+	public int getPrivateMaxNumber() {
+		return privateMaxNumber;
+	}
+	public void setPrivateMaxNumber(int privateMaxNumber) {
+		this.privateMaxNumber = privateMaxNumber;
+	}
+	
+	
 }

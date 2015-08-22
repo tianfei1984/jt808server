@@ -1972,7 +1972,7 @@ left join department d on v.depId = d.depId ]]>
 	<select id="selectVehicleMileage" parameterClass="java.util.HashMap"
 		resultClass="java.util.HashMap">
 		select v.vehicleId, v.plateNo,g.mileage, g.gas from vehicle v left join gpsrealdata g
-		 where v.vehicleid = g.vehicleId and v.deleted = 0 
+		 on v.vehicleid = g.vehicleId where v.deleted = 0 
 	
 	</select>
 	<!-- 查询油量和里程统计 -->

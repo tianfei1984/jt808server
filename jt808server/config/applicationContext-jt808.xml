@@ -10,6 +10,7 @@
 			<value>${enableSaveDb}</value>
 		</property>
 		<property name="vehicleRecorderService" ref="vehicleRecorderService"></property>
+		<property name="vehicleRecorderVersion" value="${vehicleRecorderVersion}"></property>
 	</bean>
 	
 	<!-- 终端上行数据处理接口 -->
@@ -40,6 +41,7 @@
 	<bean id="vehicleRecorderService" class="com.ltmonitor.jt808.service.impl.VehicleRecorderService">
 		<property name="mediaUploadTimeOut" value="${mediaUploadTimeOut}"></property>
 		<property name="maxRetransTimes" value="${maxRetransTimes}"></property>
+		<property name="vehicleRecorderVersion" value="${vehicleRecorderVersion}"></property>
 	</bean>
 	
 	<!-- 工厂方法 -->
@@ -63,6 +65,7 @@
 	</bean>
 	<!-- jt808命令服务 -->
 	<bean id="commandService" class="com.ltmonitor.jt808.service.impl.CommandService">
+		<property name="vehicleRecorderVersion" value="${vehicleRecorderVersion}"></property>
 	</bean>
 	
 	<!-- 夜间驾驶 -->

@@ -538,19 +538,6 @@ public class CommandService implements ICommandService {
 			cmdData.setTimeInterval(Short.parseShort(fields[0]));
 			cmdData.setTrackExpire(Short.parseShort(fields[1]));
 		} else if (tc.getCmdType() == JT808Constants.CMD_SEND_TEXT) {
-			// 文本信息下发
-			// *
-			// * 0 标志 BYTE 文本信息标志位含义见表27
-			// 1 文本信息 STRING 最长为102字节，经GBK编码
-			// 　　表27文本信息、标志位含义
-			// 位 标志
-			// 0 1：紧急
-			// 1 保留
-			// 2 1：终端显示器显示
-			// 3 1：终端TTS播读
-			// 4 1：广告屏显示
-			// 5-7 保留
-			//
 			JT_8300 cmdData = new JT_8300();
 			ts.setMessageContents(cmdData);
 			String[] fields = tc.getCmdData().split("[;]", -1);
@@ -617,25 +604,6 @@ public class CommandService implements ICommandService {
 
 			cmdData.setSaturation((byte) (Integer.parseInt(fields[8])));
 			cmdData.setChroma((byte) (Integer.parseInt(fields[9])));
-			// *
-			// * 通道ID BYTE >0
-			// 拍摄命令 WORD 0表示停止拍摄；0xFFFF表示录像；其他表示拍照张数
-			// 拍照间隔，录像时间 WORD 秒，0表示按最小间隔拍照或一直录像
-			// 保持标志 BYTE 1：保存；0：实时上传
-			// 分辨率 BYTE 0x01:320*210;
-			// 0x02:640*480:
-			// 0x03:800*600;
-			// 0x04:1024*768;
-			// 0x05:176*144;[Qcif];
-			// 0x06:352*288;[Cif];
-			// 0x07:704*288;[HALF D1];
-			// 0x08:701*576;[D1];
-			// 图像/视频质量 BYTE 1-10, 1代表质量损失最小，10表示压缩比最大
-			// 亮度 BYTE 0-255
-			// 对比度 BYTE 0-127
-			// 饱和度 BYTE 0-127
-			// 色度 BYTE 0-255
-			//
 		} else if (tc.getCmdType() == JT808Constants.CMD_EVENT_SET) {
 			// 设置事件
 			JT_8301 cmdData = new JT_8301();
@@ -854,5 +822,13 @@ public class CommandService implements ICommandService {
 		}
 		// BaseDao.saveOrUpdate(tc); //将流水号更新到命令表中
 		return ts;
+	}
+
+	public String getVehicleRecorderVersion() {
+		return vehicleRecorderVersion;
+	}
+
+	public void setVehicleRecorderVersion(String vehicleRecorderVersion) {
+		this.vehicleRecorderVersion = vehicleRecorderVersion;
 	}
 }

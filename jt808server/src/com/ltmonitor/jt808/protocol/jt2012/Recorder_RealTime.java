@@ -5,14 +5,13 @@ import java.util.Calendar;
 import com.ltmonitor.jt808.tool.DateUtil;
 
 /** 
- 采集实时时间
+ 采集实时时间 0x02H
  
 */
 public class Recorder_RealTime implements IRecorderDataBlock_2012
 {
 	/** 
 	 命令字
-	 
 	*/
 	public final byte getCommandWord()
 	{
@@ -21,10 +20,7 @@ public class Recorder_RealTime implements IRecorderDataBlock_2012
 
 	/** 
 	 数据块长度
-	 
 	*/
-//C# TO JAVA CONVERTER WARNING: Unsigned integer types have no direct equivalent in Java:
-//ORIGINAL LINE: public ushort getDataLength()
 	public final short getDataLength()
 	{
 		return 6;
@@ -64,7 +60,11 @@ public class Recorder_RealTime implements IRecorderDataBlock_2012
 		setRealTimeClock(new java.util.Date(java.util.Date.parse("20" + String.format("%02X", bytes[0]) + "-" + String.format("%02X", bytes[1]) + "-" + String.format("%02X", bytes[2]) + " " + String.format("%02X", bytes[3]) + ":" + String.format("%02X", bytes[4]) + ":" + String.format("%02X", bytes[5]))));
 	}
 
-
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return DateUtil.datetimeToString(getRealTimeClock());
+	}
 }
 
 

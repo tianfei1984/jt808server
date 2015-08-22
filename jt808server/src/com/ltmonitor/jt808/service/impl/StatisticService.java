@@ -338,14 +338,23 @@ public class StatisticService implements IStatisticService // :
 	 */
 	public void staticVehicleOnlineRate() {
 		try {
-			Date staticDate = DateUtil.getDate(new Date()); // 统计前一天的上线率
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTime(new Date());
+			calendar.add(Calendar.DAY_OF_MONTH, -1);
+			calendar.set(Calendar.HOUR_OF_DAY, 0);
+			calendar.set(Calendar.MINUTE, 0);
+			calendar.set(Calendar.SECOND, 0);
+			Date staticDate = calendar.getTime(); // 统计前一天的上线率
 			Date startDate = staticDate;
-			Date endDate = new Date();
+			calendar.set(Calendar.HOUR_OF_DAY, 23);
+			calendar.set(Calendar.MINUTE, 59);
+			calendar.set(Calendar.SECOND, 59);
+			Date endDate = calendar.getTime();
+			
 			logger.warn("开始统计车辆上线率,统计时间段:" + startDate + "," + endDate);
 
 			// 对于没有上线记录，也就是当天没上线的车辆，也要生成记录
-			List<VehicleData> vehicles = baseDao.query(
-					"from VehicleData where deleted = ?", false);
+			List<VehicleData> vehicles = baseDao.query("from VehicleData where deleted = ?", false);
 			java.util.HashMap<String, VehicleOnlineRate> onlineMap = new java.util.HashMap<String, VehicleOnlineRate>();
 			List<VehicleOnlineRate> ls = new ArrayList();
 			for (VehicleData vd : vehicles) {
@@ -369,8 +378,7 @@ public class StatisticService implements IStatisticService // :
 					+ " or  (endTime >= ? and endTime <= ?) "
 					+ " or  ( startTime < ? and endTime > ?)) and childType = ? ";
 
-			java.util.List result = getBaseDao().query(
-					hsql,
+			List result = getBaseDao().query(hsql,
 					new Object[] { startDate, endDate, startDate, endDate,
 							startDate, endDate, AlarmRecord.TYPE_ONLINE });
 			for (Object obj : result) {

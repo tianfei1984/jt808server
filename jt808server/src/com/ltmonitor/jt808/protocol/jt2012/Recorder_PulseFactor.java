@@ -1,17 +1,16 @@
 package com.ltmonitor.jt808.protocol.jt2012;
 
 import com.ltmonitor.jt808.protocol.BitConverter;
+import com.ltmonitor.jt808.tool.DateUtil;
 
 
 /** 
- 采集脉冲系数
- 
+ 采集脉冲系数 0x04H
 */
 public class Recorder_PulseFactor implements IRecorderDataBlock_2012
 {
 	/** 
 	 命令字
-	 
 	*/
 	public final byte getCommandWord()
 	{
@@ -20,10 +19,7 @@ public class Recorder_PulseFactor implements IRecorderDataBlock_2012
 
 	/** 
 	 数据块长度
-	 
 	*/
-//C# TO JAVA CONVERTER WARNING: Unsigned integer types have no direct equivalent in Java:
-//ORIGINAL LINE: public ushort getDataLength()
 	public final short getDataLength()
 	{
 		return 8;
@@ -45,21 +41,13 @@ public class Recorder_PulseFactor implements IRecorderDataBlock_2012
 
 	/** 
 	 脉冲系数
-	 
 	*/
-//C# TO JAVA CONVERTER WARNING: Unsigned integer types have no direct equivalent in Java:
-//ORIGINAL LINE: private ushort privatePulseFactor;
 	private short privatePulseFactor;
-//C# TO JAVA CONVERTER WARNING: Unsigned integer types have no direct equivalent in Java:
-//ORIGINAL LINE: public ushort getPulseFactor()
 	public final short getPulseFactor()
 	{
 		return privatePulseFactor;
 	}
-//C# TO JAVA CONVERTER WARNING: Unsigned integer types have no direct equivalent in Java:
-//ORIGINAL LINE: public void setPulseFactor(ushort value)
-	public final void setPulseFactor(short value)
-	{
+	public final void setPulseFactor(short value) {
 		privatePulseFactor = value;
 	}
 
@@ -77,5 +65,11 @@ public class Recorder_PulseFactor implements IRecorderDataBlock_2012
 
 		this.privatePulseFactor = (short)BitConverter.ToUInt16(bytes, 6);
 		//setPulseFactor((short)(Integer.parseInt(bytes[6] << 8) + Integer.parseInt(bytes[7])));
+	}
+
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return DateUtil.datetimeToString(getRealTime())+","+getPulseFactor();
 	}
 }

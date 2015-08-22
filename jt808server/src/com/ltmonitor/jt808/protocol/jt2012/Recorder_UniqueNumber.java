@@ -1,10 +1,11 @@
 package com.ltmonitor.jt808.protocol.jt2012;
 
 import com.ltmonitor.jt808.protocol.BitConverter;
+import com.ltmonitor.jt808.tool.DateUtil;
 
 
 /** 
- 采集唯一性编号
+ 采集唯一性编号  0x07H
  
 */
 public class Recorder_UniqueNumber implements IRecorderDataBlock_2012
@@ -12,7 +13,6 @@ public class Recorder_UniqueNumber implements IRecorderDataBlock_2012
 
 	/** 
 	 命令字
-	 
 	*/
 	public final byte getCommandWord()
 	{
@@ -23,8 +23,6 @@ public class Recorder_UniqueNumber implements IRecorderDataBlock_2012
 	 数据块长度
 	 
 	*/
-//C# TO JAVA CONVERTER WARNING: Unsigned integer types have no direct equivalent in Java:
-//ORIGINAL LINE: public ushort getDataLength()
 	public final short getDataLength()
 	{
 		return 35;
@@ -32,7 +30,6 @@ public class Recorder_UniqueNumber implements IRecorderDataBlock_2012
 
 	/** 
 	 生产厂 CCC 认证代码
-	 
 	*/
 	private String cCCcode;
 	public final String getCCCcode()
@@ -135,5 +132,11 @@ public class Recorder_UniqueNumber implements IRecorderDataBlock_2012
 	public final byte[] WriteToBytes()
 	{
 		return null;
+	}
+
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return getCCCcode()+","+getCertifiedProductModel()+","+DateUtil.dateToString(getProductDateTime())+","+getProductSerialNumber();
 	}
 }

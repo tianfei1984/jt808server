@@ -3,27 +3,29 @@ package com.ltmonitor.jt808.protocol.jt2012;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.ltmonitor.entity.VehicleRecorder;
+import com.ltmonitor.jt808.entity.SpeedRecorder;
 import com.ltmonitor.jt808.protocol.BitConverter;
+import com.ltmonitor.jt808.tool.DateUtil;
 
 /**
- * 采集指定的超时驾驶记录
+ * 采集指定的超时驾驶记录 0x11H
  */
 public class Recorder_TimeOutDrivingRecord implements IRecorderDataBlock_2012 {
-	private List<TiredDrivingRecord> drivingRecordList = new ArrayList<TiredDrivingRecord>();
+	private List<VehicleRecorder> drivingRecordList = new ArrayList<VehicleRecorder>();
+	
+	
 
 	/**
 	 * 命令字
 	 */
 	public final byte getCommandWord() {
-		return 0x06;
+		return 0x11;
 	}
 
 	/**
 	 * 数据块长度
 	 */
-	// C# TO JAVA CONVERTER WARNING: Unsigned integer types have no direct
-	// equivalent in Java:
-	// ORIGINAL LINE: public ushort getDataLength()
 	public final short getDataLength() {
 		return 87;
 	}
@@ -34,9 +36,9 @@ public class Recorder_TimeOutDrivingRecord implements IRecorderDataBlock_2012 {
 	}
 
 	public final void ReadFromBytes(byte[] bytes) {
-		StringBuilder sb = new StringBuilder();
 		if (bytes != null) {
 			for (int i = 0; i < bytes.length / 50; i++) {
+				VehicleRecorder vr = new VehicleRecorder();
 				// 获取机动车驾驶证号码
 				byte[] nub = new byte[18];
 				System.arraycopy(bytes, 0 + 50 * i, nub, 0, 18);
@@ -46,8 +48,8 @@ public class Recorder_TimeOutDrivingRecord implements IRecorderDataBlock_2012 {
 					String add = "00H";
 					driverNub = driverNub + add;
 				}
-
 				String licenseNo = driverNub;
+				vr.setDriverLicense(licenseNo);
 				// 获取开始时间
 				byte[] ContinuousDrivingBeginTime = new byte[6];
 				System.arraycopy(bytes, 18 + 50 * i,
@@ -65,7 +67,7 @@ public class Recorder_TimeOutDrivingRecord implements IRecorderDataBlock_2012 {
 						+ ":"
 						+ String.format("%02X", ContinuousDrivingBeginTime[5])))
 						.toString();
-				String strStartTime = beginTime;
+				vr.setStartTime(DateUtil.stringToDateTime(beginTime));
 				// 获取结束时间
 				byte[] ContinuousDrivingEndTime = new byte[6];
 				System.arraycopy(bytes, 24 + 50 * i, ContinuousDrivingEndTime,
@@ -83,24 +85,34 @@ public class Recorder_TimeOutDrivingRecord implements IRecorderDataBlock_2012 {
 						+ ":"
 						+ String.format("%02X", ContinuousDrivingEndTime[5])))
 						.toString();
-				String strEndTime = endTime;
+				vr.setEndTime(DateUtil.stringToDate(endTime));
+				SpeedRecorder sr1 = new SpeedRecorder();
 				// 获取开始时间有效位置
 				byte[] BeginTimePlace = new byte[10];
 				System.arraycopy(bytes, 30 + 50 * i, BeginTimePlace, 0, 10);
-				String beginPlace = GetPlaceInfo(BeginTimePlace);
-				String strStartLocation = beginPlace;
+				int longitude = BitConverter.ToUInt32(BeginTimePlace, 0);
+				int latitude = BitConverter.ToUInt32(BeginTimePlace, 4);
+				int altitude = BitConverter.ToUInt16(BeginTimePlace, 8);
+				sr1.setAltitude(altitude);
+				sr1.setLatitude(latitude);
+				sr1.setLongitude(longitude);
+				sr1.setRecorderDate(vr.getStartTime());
 				// 获取结束时间有效位置
+				SpeedRecorder sr2 = new SpeedRecorder();
 				byte[] EndTimePlace = new byte[10];
 				System.arraycopy(bytes, 40 + 50 * i, EndTimePlace, 0, 10);
-				String endPlace = GetPlaceInfo(EndTimePlace);
-				String strEndLocation = endPlace;
-				this.drivingRecordList.add(new TiredDrivingRecord(licenseNo,
-						strStartTime, strEndTime, strStartLocation,
-						strEndLocation));
-
+				longitude = BitConverter.ToUInt32(EndTimePlace, 0);
+				latitude = BitConverter.ToUInt32(EndTimePlace, 4);
+				altitude = BitConverter.ToUInt16(EndTimePlace, 8);
+				sr1.setAltitude(altitude);
+				sr1.setLatitude(latitude);
+				sr1.setLongitude(longitude);
+				sr1.setRecorderDate(vr.getStartTime());
+				vr.getSpeedList().add(sr1);
+				vr.getSpeedList().add(sr2);
+				drivingRecordList.add(vr);
 			}
 		}
-
 	}
 
 	/**
@@ -129,11 +141,11 @@ public class Recorder_TimeOutDrivingRecord implements IRecorderDataBlock_2012 {
 		return sb.toString();
 	}
 
-	public List<TiredDrivingRecord> getDrivingRecordList() {
+	public List<VehicleRecorder> getDrivingRecordList() {
 		return drivingRecordList;
 	}
 
-	public void setDrivingRecordList(List<TiredDrivingRecord> drivingRecordList) {
+	public void setDrivingRecordList(List<VehicleRecorder> drivingRecordList) {
 		this.drivingRecordList = drivingRecordList;
 	}
 }

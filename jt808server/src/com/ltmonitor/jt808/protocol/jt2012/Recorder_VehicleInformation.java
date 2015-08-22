@@ -4,14 +4,13 @@ import com.ltmonitor.jt808.protocol.BitConverter;
 
 
 /** 
- 采集车辆信息
+ 采集车辆信息 0x05H
  
 */
 public class Recorder_VehicleInformation implements IRecorderDataBlock_2012
 {
 	/** 
 	 命令字
-	 
 	*/
 	public final byte getCommandWord()
 	{
@@ -20,7 +19,6 @@ public class Recorder_VehicleInformation implements IRecorderDataBlock_2012
 
 	/** 
 	 数据块长度
-	 
 	*/
 //C# TO JAVA CONVERTER WARNING: Unsigned integer types have no direct equivalent in Java:
 //ORIGINAL LINE: public ushort getDataLength()
@@ -31,7 +29,6 @@ public class Recorder_VehicleInformation implements IRecorderDataBlock_2012
 
 	/** 
 	 车辆识别代号
-	 
 	*/
 	private String privateVIN;
 	public final String getVIN()
@@ -126,5 +123,10 @@ public class Recorder_VehicleInformation implements IRecorderDataBlock_2012
 		setVehicleNumber(BitConverter.getString(bytes, 17, 2) + BitConverter.getString(bytes, 19, 10));
 
 		setClassificationOfVehicle(BitConverter.getString(bytes, 29, 12));
+	}
+
+	@Override
+	public String toString() {
+		return getVIN()+","+getVehicleNumber()+","+getClassificationOfVehicle();
 	}
 }

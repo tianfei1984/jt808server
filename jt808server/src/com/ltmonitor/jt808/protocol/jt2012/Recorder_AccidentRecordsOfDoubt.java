@@ -12,7 +12,7 @@ import com.ltmonitor.jt808.protocol.BitConverter;
 import com.ltmonitor.jt808.tool.DateUtil;
 
 /**
- * 采集指定的事故疑点记录
+ * 采集指定的事故疑点记录 10H
  */
 public class Recorder_AccidentRecordsOfDoubt implements IRecorderDataBlock_2012 {
 
@@ -23,7 +23,7 @@ public class Recorder_AccidentRecordsOfDoubt implements IRecorderDataBlock_2012 
 	 * 命令字
 	 */
 	public final byte getCommandWord() {
-		return 0x06;
+		return 0x10;
 	}
 
 	/**
@@ -60,19 +60,19 @@ public class Recorder_AccidentRecordsOfDoubt implements IRecorderDataBlock_2012 
 					driverLicense = driverLicense + add;
 				}
 				
-
+				//100组事故疑点记录
 				for (int j = 0; j < 100; j++) {
 					SpeedRecorder sr = new SpeedRecorder();
-					
+					//行驶结束时速度
 					int s = BitConverter.ToUInt32(questionable[24 + 2 * j]);
 					String speed = "" + s;
 					if (speed.length() < 3) {
 						speed = StringUtil.leftPad(speed, 3, '0');
 					}
 					sr.setSpeed(s);
-					
+					//行驶结束时的状态信号 
 					int signal = questionable[25 + 2 * j];
-					sr.setSignal(signal);
+					sr.setSignalState(signal);
 
 					String State = "";
 
@@ -124,7 +124,7 @@ public class Recorder_AccidentRecordsOfDoubt implements IRecorderDataBlock_2012 
 					vr.getSpeedList().add(sr);
 					//getOneQuestionableInfo().put(takeTime, speed + State);
 				}
-
+				//行驶结束前最后一次有效位置信息
 				byte[] placeInfo = new byte[10];
 				System.arraycopy(questionable, 224, placeInfo, 0, 10);
 				int start = 224;
@@ -136,40 +136,12 @@ public class Recorder_AccidentRecordsOfDoubt implements IRecorderDataBlock_2012 
 				vr.setAltitude(altitude);
 				
 				vehicleRecorderList.add(vr);
-				
-				//String place = GetPlaceInfo(placeInfo);
-				//getOneQuestionableOtherInfo().put(beginTime, driverLicense + place);
-				//getQuestionableInfo().put(beginTime, getOneQuestionableInfo());
-				//setOneQuestionableInfo(new java.util.HashMap<java.util.Date, String>());
-
 			}
 
 		}
 	}
 
-	/**
-	 * 获取地点信息
-	 * 
-	 * @param placeInfo
-	 * @return
-	 */
-	private String GetPlaceInfo(byte[] placeInfo) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("经度为："
-				+ (int) ((int) (placeInfo[0] << 24)
-						+ (int) (placeInfo[1] << 16)
-						+ (int) (placeInfo[2] << 8) + (int) (placeInfo[3]))
-				* 0.0001);
-
-		sb.append("纬度为："
-				+ (int) ((int) (placeInfo[4] << 24)
-						+ (int) (placeInfo[5] << 16)
-						+ (int) (placeInfo[6] << 8) + (int) (placeInfo[7]))
-				* 0.0001);
-
-		sb.append("海拔高度为："
-				+ (int) ((int) (placeInfo[8] << 8) + (int) (placeInfo[9])));
-
-		return sb.toString();
+	public List<VehicleRecorder> getVehicleRecorderList() {
+		return vehicleRecorderList;
 	}
 }

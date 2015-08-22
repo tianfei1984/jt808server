@@ -21,6 +21,16 @@ import com.ltmonitor.jt808.protocol.Recorder_TiredDrivingRecord;
 import com.ltmonitor.jt808.protocol.T808Message;
 import com.ltmonitor.jt808.protocol.T808MessageHeader;
 import com.ltmonitor.jt808.protocol.TiredDrivingRecordItem;
+import com.ltmonitor.jt808.protocol.jt2012.IRecorderDataBlock_2012;
+import com.ltmonitor.jt808.protocol.jt2012.JT2012_0700;
+import com.ltmonitor.jt808.protocol.jt2012.Recorder_AccidentRecordsOfDoubt;
+import com.ltmonitor.jt808.protocol.jt2012.Recorder_DriverIdentity;
+import com.ltmonitor.jt808.protocol.jt2012.Recorder_ExternalPowerSupply;
+import com.ltmonitor.jt808.protocol.jt2012.Recorder_LocationInformation;
+import com.ltmonitor.jt808.protocol.jt2012.Recorder_ParameterChange;
+import com.ltmonitor.jt808.protocol.jt2012.Recorder_Speed;
+import com.ltmonitor.jt808.protocol.jt2012.Recorder_SpeedStatusLog;
+import com.ltmonitor.jt808.protocol.jt2012.Recorder_TimeOutDrivingRecord;
 import com.ltmonitor.jt808.service.ICommandService;
 import com.ltmonitor.jt808.service.IMessageSender;
 import com.ltmonitor.jt808.service.ITransferGpsService;
@@ -67,6 +77,8 @@ public class VehicleRecorderService implements IVehicleRecorderService {
 	
 	// 数据转发服务,主要用于809转发
 	private ITransferGpsService transferGpsService;
+	//  行车记录仪的版本：2003、2012
+	private String vehicleRecorderVersion;
 	
 	/**
 	 * 实时数据服务
@@ -179,7 +191,13 @@ public class VehicleRecorderService implements IVehicleRecorderService {
 		if (mp.isComplete()) {
 			// 如果包已经上传完整，则保存，并删除内存记录
 			msgMap.remove(mp.getKey());
-			SaveVehicleRecorder(mp);
+			if(vehicleRecorderVersion == null || "2003".equals(vehicleRecorderVersion)){
+				//2003
+				SaveVehicleRecorder(mp);
+			} else {
+				//2012
+				SaveVehicleRecorder2012(mp);
+			}
 			this.sendAck(mp);
 		}
 
@@ -235,7 +253,7 @@ public class VehicleRecorderService implements IVehicleRecorderService {
 					result.add(vr1);
 				}
 			}
-
+			
 		} else if (cmdWord == 0x07) {
 			Recorder_DoubtfulPointData dv = (Recorder_DoubtfulPointData) recorderData;
 			for (Date key : dv.getDoubtfulPointData().keySet()) {
@@ -254,7 +272,7 @@ public class VehicleRecorderService implements IVehicleRecorderService {
 					result.add(vr1);
 				}
 			}
-
+			
 		} else if (cmdWord == 0x09) {
 			// 最近两天内的数据
 			Recorder_SpeedIn2Days dv = (Recorder_SpeedIn2Days) recorderData;
@@ -273,7 +291,7 @@ public class VehicleRecorderService implements IVehicleRecorderService {
 					result.add(vr1);
 				}
 			}
-
+			
 		} else if (cmdWord == 0x11) {
 			// 疲劳驾驶
 			Recorder_TiredDrivingRecord dv = (Recorder_TiredDrivingRecord) recorderData;
@@ -298,6 +316,131 @@ public class VehicleRecorderService implements IVehicleRecorderService {
 			result.add(vr1);
 		}
 
+		this.baseDao.saveOrUpdateAll(result);
+	}
+	
+	private void SaveVehicleRecorder2012(VehicleRecorderPacket vr) {
+		T808Message msg = vr.getT808Message();
+		
+		JT2012_0700 rd = (JT2012_0700) msg.getMessageContents();
+		rd.ReadFromBytes(vr.getWholePacket());
+		VehicleData vd = realDataService.getVehicleData(msg.getSimNo());
+
+		if (vd == null)
+			return;
+
+		// 响应流水号
+		int resNo = rd.getResponseMessageSerialNo();
+
+		IRecorderDataBlock_2012 recorderData = rd.getData();
+
+		// String hsql = "from TerminalCommand where SN = ?";
+		TerminalCommand tc = commandService.getCommandBySn(resNo);// (TerminalCommand)this.baseDao.find(hsql,
+																	// resNo);
+		int commandId = 0;
+		if (tc != null) {
+			commandId = tc.getEntityId();
+			tc = commandService.UpdateStatus(msg.getSimNo(), resNo,
+					TerminalCommand.STATUS_SUCCESS);
+			if (TerminalCommand.FROM_GOV.equals(tc.getOwner())) {
+				// 如果是上级平台下发的指令，则需要转发给上级平台
+				this.transferGpsService.transferRecorderData(vd.getPlateNo(),
+						vd.getPlateColor(), rd.getCommandWord(),rd.getData_1905_2012());
+			}
+
+		}
+		List<VehicleRecorder> result = new ArrayList<VehicleRecorder>();
+		byte cmdWord = recorderData.getCommandWord();
+		logger.info(cmdWord + ',' + recorderData.toString());
+		if(cmdWord == 0x08){
+			//采集指定的行驶速度记录
+			Recorder_Speed rs = (Recorder_Speed) recorderData;
+			List<VehicleRecorder> list = rs.getVehicleRecorders();
+			for(VehicleRecorder v : list){
+				v.setCmd(cmdWord);
+				v.setCommandId(commandId);
+				v.setVehicleId(vd.getEntityId());
+				result.add(v);
+			}
+		} else if(cmdWord == 0x09){
+			//位置信息记录
+			Recorder_LocationInformation rl = (Recorder_LocationInformation) recorderData;
+			List<VehicleRecorder> list = rl.getVehicleRecorders();
+			for(VehicleRecorder v : list){
+				v.setCmd(cmdWord);
+				v.setCommandId(commandId);
+				v.setVehicleId(vd.getEntityId());
+				result.add(v);
+			}
+		} else if(cmdWord == 0x10){
+			//事故疑点记录
+			Recorder_AccidentRecordsOfDoubt ra = (Recorder_AccidentRecordsOfDoubt) recorderData;
+			List<VehicleRecorder> list = ra.getVehicleRecorderList();
+			for(VehicleRecorder v : list){
+				v.setCmd(cmdWord);
+				v.setCommandId(commandId);
+				v.setVehicleId(vd.getEntityId());
+				result.add(v);
+			}
+		} else if(cmdWord == 0x11){
+			//超时驾驶记录
+			Recorder_TimeOutDrivingRecord rt = (Recorder_TimeOutDrivingRecord) recorderData;
+			List<VehicleRecorder> list = rt.getDrivingRecordList();
+			for(VehicleRecorder v : list){
+				v.setCmd(cmdWord);
+				v.setCommandId(commandId);
+				v.setVehicleId(vd.getEntityId());
+				result.add(v);
+			}
+		} else if(cmdWord == 0x12) {
+			//驾驶人身份记录
+			Recorder_DriverIdentity rdi = (Recorder_DriverIdentity) recorderData;
+			List<VehicleRecorder> list = rdi.getEventList();
+			for(VehicleRecorder v : list){
+				v.setCmd(cmdWord);
+				v.setCommandId(commandId);
+				v.setVehicleId(vd.getEntityId());
+				result.add(v);
+			}
+		} else if(cmdWord == 0x13) {
+			//外部供电记录
+			Recorder_ExternalPowerSupply re = (Recorder_ExternalPowerSupply) recorderData;
+			List<VehicleRecorder> list = re.getEventList();
+			for(VehicleRecorder v : list){
+				v.setCmd(cmdWord);
+				v.setCommandId(commandId);
+				v.setVehicleId(vd.getEntityId());
+				result.add(v);
+			}
+		} else if(cmdWord ==0x14) {
+			//记录仪参数修改记录
+			Recorder_ParameterChange rp = (Recorder_ParameterChange) recorderData;
+			List<VehicleRecorder> list = rp.getEventList();
+			for(VehicleRecorder v : list){
+				v.setCmd(cmdWord);
+				v.setCommandId(commandId);
+				v.setVehicleId(vd.getEntityId());
+				result.add(v);
+			}
+		} else if(cmdWord == 0x15){
+			//速度状态日志
+			Recorder_SpeedStatusLog rss = (Recorder_SpeedStatusLog) recorderData;
+			List<VehicleRecorder> list = rss.getVehicleRecorders();
+			for(VehicleRecorder v : list){
+				v.setCmd(cmdWord);
+				v.setCommandId(commandId);
+				v.setVehicleId(vd.getEntityId());
+				result.add(v);
+			}
+		} else {
+			VehicleRecorder vr1 = new VehicleRecorder();
+			vr1.setCmd(cmdWord);
+			vr1.setCommandId(commandId);
+			vr1.setVehicleId(vd.getEntityId());
+			vr1.setCmdData(recorderData.toString());
+			result.add(vr1);
+		}
+		
 		this.baseDao.saveOrUpdateAll(result);
 	}
 
@@ -381,4 +524,11 @@ public class VehicleRecorderService implements IVehicleRecorderService {
 		this.realDataService = realDataService;
 	}
 
+	public String getVehicleRecorderVersion() {
+		return vehicleRecorderVersion;
+	}
+
+	public void setVehicleRecorderVersion(String vehicleRecorderVersion) {
+		this.vehicleRecorderVersion = vehicleRecorderVersion;
+	}
 }
