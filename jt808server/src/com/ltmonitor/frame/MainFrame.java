@@ -47,6 +47,7 @@ import com.ltmonitor.app.GpsConnection;
 import com.ltmonitor.app.ServiceLauncher;
 import com.ltmonitor.entity.GPSRealData;
 import com.ltmonitor.entity.StringUtil;
+import com.ltmonitor.entity.Terminal;
 import com.ltmonitor.entity.VehicleData;
 import com.ltmonitor.jt808.protocol.T808Message;
 import com.ltmonitor.jt808.service.IGpsDataService;
@@ -535,23 +536,38 @@ public class MainFrame extends JFrame {
 	}
 
 	private void createTestVehicle() {
-
+		//增加终端
+		List<Terminal> tmnls = new ArrayList<Terminal>();
+		Terminal tmnl = null;
 		List result = new ArrayList();
-		for (int m = 0; m < 10001; m++) {
+		int tmnlId = 1000000;
+		//增加车辆
+		for (int m = 0; m < 10000; m++) {
 			VehicleData vd = new VehicleData();
 			String plateNo = "测B" + StringUtil.leftPad("" + m, 5, "0");
 			vd.setPlateNo(plateNo);
 			String simNo = "131" + StringUtil.leftPad("" + m, 8, "0");
 			vd.setSimNo(simNo);
 			vd.setPlateColor(2);
-			if (m < 7000)
-				vd.setDepId(117440527);
-			else
-				vd.setDepId(117440528);
+			vd.setTermId(tmnlId);
+			vd.setRegion("123");
+			vd.setDepId(117440527);
 			result.add(vd);
+			tmnl = new Terminal();
+			tmnl.setEntityId(tmnlId);
+			tmnl.setSimNo(simNo);
+			tmnl.setBind(true);
+			tmnl.setMakeFactory("123");
+			tmnl.setTermNo(tmnlId+"");
+			tmnl.setTermNo("123");
+			tmnls.add(tmnl);
+			
+			tmnlId++;
 		}
-
+		//添加车辆
 		ServiceLauncher.getBaseDao().saveOrUpdateAll(result);
+		//添加终端
+		ServiceLauncher.getBaseDao().saveOrUpdateAll(tmnls);
 
 	}
 
